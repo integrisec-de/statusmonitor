@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Status-Badge – Demo</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+         background:#f4f7fb; color:#18243a; margin:0; padding:32px 20px; line-height:1.5; }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 6px; }
+  h2 { font-size: 1.05rem; margin: 40px 0 12px; }
+  p.lead { color:#5e738a; margin: 0 0 8px; }
+  code { background:#eef2f8; padding:2px 6px; border-radius:5px; font-size:.85em; }
+  .grid { display:grid; grid-template-columns: 90px 1fr 1fr 1fr; gap:12px; align-items:stretch; margin-top:20px; }
+  .col-head { font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:#5e738a; align-self:center; }
+  .row-head { font-weight:700; align-self:center; }
+  .cell { background:#fff; border:1px solid #dde4f0; border-radius:10px; padding:16px; min-height:54px; display:flex; align-items:center; }
+  .dark { background:#1a2030; color:#eef2f8; border-radius:12px; padding:20px; }
+  .dark .cell { background:#232b3d; border-color:#3a445c; }
+  .darkrow { display:flex; gap:16px; flex-wrap:wrap; }
+  .darkrow .cell { min-width: 220px; }
+  .note { color:#5e738a; font-size:.85rem; }
+  @media (max-width:640px){ .grid{ grid-template-columns:1fr; } .col-head{ display:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>integrisec Statusmonitor – Status-Badge</h1>
+  <p class="lead">Dauerhaft sichtbar, drei Zustände (NORMAL · STÖRUNG · KRITISCH), drei Varianten.
+    „Details" führt zur öffentlichen Status-Seite.</p>
+
+  <div class="grid">
+    <div></div>
+    <div class="col-head">Normal</div>
+    <div class="col-head">Störung</div>
+    <div class="col-head">Kritisch</div>
+
+    <div class="row-head">dot</div>
+    <div class="cell" id="dot-normal"></div>
+    <div class="cell" id="dot-stoerung"></div>
+    <div class="cell" id="dot-kritisch"></div>
+
+    <div class="row-head">bar</div>
+    <div class="cell" id="bar-normal"></div>
+    <div class="cell" id="bar-stoerung"></div>
+    <div class="cell" id="bar-kritisch"></div>
+
+    <div class="row-head">block</div>
+    <div class="cell" id="block-normal"></div>
+    <div class="cell" id="block-stoerung"></div>
+    <div class="cell" id="block-kritisch"></div>
+  </div>
+
+  <h2>Auf dunklem Hintergrund (Beispiel: Störung)</h2>
+  <div class="dark">
+    <div class="darkrow">
+      <div class="cell" id="d-dot"></div>
+      <div class="cell" id="d-bar"></div>
+      <div class="cell" id="d-block"></div>
+    </div>
+  </div>
+
+  <h2>White-Label (block mit eigenem Label)</h2>
+  <div class="cell" id="wl-block" style="max-width:540px;"></div>
+
+  <h2>Einbinden</h2>
+  <p class="note">Snippet auf der eigenen Seite:
+    <code>&lt;script src="badge.js" data-status-url="https://status.../status.json"
+    data-page-url="https://status..." data-variant="bar"&gt;&lt;/script&gt;</code></p>
+</div>
+
+<!-- Badge-Einbettungen: echtes badge.js, je eigenes data-target. -->
+<!-- Hell -->
+<script src="badge.js" data-status-url="badge-demo-normal.json"   data-page-url="index.html" data-variant="dot"   data-target="#dot-normal"></script>
+<script src="badge.js" data-status-url="badge-demo-stoerung.json" data-page-url="index.html" data-variant="dot"   data-target="#dot-stoerung"></script>
+<script src="badge.js" data-status-url="badge-demo-kritisch.json" data-page-url="index.html" data-variant="dot"   data-target="#dot-kritisch"></script>
+<script src="badge.js" data-status-url="badge-demo-normal.json"   data-page-url="index.html" data-variant="bar"   data-target="#bar-normal"></script>
+<script src="badge.js" data-status-url="badge-demo-stoerung.json" data-page-url="index.html" data-variant="bar"   data-target="#bar-stoerung"></script>
+<script src="badge.js" data-status-url="badge-demo-kritisch.json" data-page-url="index.html" data-variant="bar"   data-target="#bar-kritisch"></script>
+<script src="badge.js" data-status-url="badge-demo-normal.json"   data-page-url="index.html" data-variant="block" data-target="#block-normal"></script>
+<script src="badge.js" data-status-url="badge-demo-stoerung.json" data-page-url="index.html" data-variant="block" data-target="#block-stoerung"></script>
+<script src="badge.js" data-status-url="badge-demo-kritisch.json" data-page-url="index.html" data-variant="block" data-target="#block-kritisch"></script>
+<!-- Dunkel (Störung) -->
+<script src="badge.js" data-status-url="badge-demo-stoerung.json" data-page-url="index.html" data-variant="dot"   data-target="#d-dot"></script>
+<script src="badge.js" data-status-url="badge-demo-stoerung.json" data-page-url="index.html" data-variant="bar"   data-target="#d-bar"></script>
+<script src="badge.js" data-status-url="badge-demo-stoerung.json" data-page-url="index.html" data-variant="block" data-target="#d-block"></script>
+<!-- White-Label -->
+<script src="badge.js" data-status-url="badge-demo-kritisch.json" data-page-url="index.html" data-variant="block" data-label="Stadtwerke Musterstadt · Systemstatus" data-target="#wl-block"></script>
+</body>
+</html>

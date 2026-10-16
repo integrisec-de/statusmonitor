@@ -1,0 +1,23 @@
+integrisec Statusmonitor
+Copyright 2026 Steven Mai
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+
+================================================================================
+Third-party components
+================================================================================
+
+Outfit typeface
+    Files: assets/fonts/outfit-*.woff2
+    Copyright 2021 The Outfit Project Authors
+    Licensed under the SIL Open Font License, Version 1.1.
+    License text: assets/fonts/OFL.txt
+    Details on origin and subsetting: assets/fonts/FONTS.md
+
+Caddy web server
+    Not contained in this repository. The deployment packages produced by
+    deploy/paketieren.sh bundle a Caddy binary that is obtained separately
+    from https://caddyserver.com and is licensed under the Apache License,
+    Version 2.0. Its license text is shipped with those packages under
+    licenses/caddy/.

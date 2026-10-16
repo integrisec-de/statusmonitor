@@ -1,0 +1,267 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:5d7a3e91-2c48-4b60-9f15-5741754d0003",
+  "version": 2,
+  "metadata": {
+    "timestamp": "2026-09-12T00:00:00Z",
+    "lifecycles": [
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "manual-audit",
+          "description": "Manuelle Repo-Inventur: kein Paketmanager vorhanden, Komponenten durch Dateiinspektion ermittelt"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "root-statusmonitor",
+      "type": "application",
+      "name": "statusmonitor",
+      "description": "Statische Statusseite (public/intern/demo) mit Admin-Editor. Kein Build-Schritt, kein Paketmanager. Auslieferung als Caddy-Paket oder via Cloudflare Pages.",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2026 Steven Mai",
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/smaicloud/statusmonitor"
+        },
+        {
+          "type": "license",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "audit:dependency_manifests",
+        "value": "keine (kein package.json, go.mod, requirements.txt o.ae.)"
+      },
+      {
+        "name": "audit:transitive_dependencies",
+        "value": "0 - ohne Paketmanager existiert kein transitiver Abhaengigkeitsbaum"
+      },
+      {
+        "name": "audit:external_runtime_requests",
+        "value": "keine - kein CDN, keine externen Fonts, keine Analytics"
+      },
+      {
+        "name": "audit:package_layout",
+        "value": "Eigene Lizenz in der Paketwurzel (LICENSE, NOTICE); Fremdlizenzen getrennt unter licenses/caddy/ und licenses/fonts/"
+      },
+      {
+        "name": "audit:secrets",
+        "value": "Arbeitsbaum und vollstaendige History aller Branches gescannt - keine Secrets, keine accountgebundenen Identifier"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "file-license",
+      "type": "file",
+      "name": "LICENSE",
+      "scope": "required",
+      "description": "Vollstaendiger, unveraenderter Text der Apache License 2.0; byte-identisch mit apache.org/licenses/LICENSE-2.0.txt geprueft. Wird in die Wurzel beider Kundenpakete kopiert (Apache-2.0 Abschnitt 4a).",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        }
+      ]
+    },
+    {
+      "bom-ref": "file-notice",
+      "type": "file",
+      "name": "NOTICE",
+      "scope": "required",
+      "description": "Attributions-Notice nach Apache-2.0 Abschnitt 4d: eigenes Copyright plus Hinweise auf Outfit (OFL-1.1) und die im Kundenpaket gebuendelte Caddy-Binary. Muss bei jeder Weitergabe mitgeliefert werden, unabhaengig vom Footer-Branding.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "71f8a283fd8a2c21550e01654725402bf150e2dd4a700d0487c53fab44268d59"
+        }
+      ]
+    },
+    {
+      "bom-ref": "font-outfit",
+      "type": "file",
+      "name": "Outfit",
+      "version": "unbekannt",
+      "purl": "pkg:generic/outfit",
+      "scope": "required",
+      "description": "Font-Subset, selbst gehostet als woff2 in 5 Schnitten (400-800) unter assets/fonts/. Die frueher doppelt vorhandene, von keiner Seite angefragte Kopie unter demo/assets/fonts/ wurde entfernt; alle @font-face verweisen absolut auf /assets/fonts/.",
+      "licenses": [
+        {
+          "license": {
+            "id": "OFL-1.1"
+          }
+        }
+      ],
+      "copyright": "Copyright 2021 The Outfit Project Authors",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0215d96545aece4f19b4e86f10dab813005ea7fe9490537c1ebad83b39faa9d7"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "188ea7323fd6fefe5214df9b52e6ef3b7d8f576b2e442ee5671f3004d49cd241"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "68659ba8ac34f7d61db98e68daa1f7fff9dfac3837160944d95c4e1050ad9bd4"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "9a3419eb5e1473d0c20caff110667f0aa20026023445458e6a6d4505bb09066a"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "97827194f6a56bf76ad0f532048b6c9e36eb86706f1b9139dff603a65b06aa99"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://fonts.google.com/specimen/Outfit"
+        }
+      ],
+      "properties": [
+        {
+          "name": "audit:license_evidence",
+          "value": "Lizenz aus dem Font-Familiennamen abgeleitet. woff2 ist Brotli-komprimiert, der Name-Table mit Copyright und Version ist nicht auslesbar - die Ausgangsversion laesst sich aus den Dateien nicht mehr bestimmen."
+        },
+        {
+          "name": "audit:attribution",
+          "value": "erfuellt - OFL.txt und FONTS.md liegen bei den Schriften, werden nach licenses/fonts/ gespiegelt und sind in HANDBUCH.md A.6 sichtbar genannt"
+        }
+      ]
+    },
+    {
+      "bom-ref": "caddy",
+      "type": "application",
+      "name": "Caddy",
+      "version": "unbekannt (manuell ins Kundenpaket gelegt)",
+      "purl": "pkg:golang/github.com/caddyserver/caddy/v2",
+      "scope": "required",
+      "description": "Webserver. NICHT im Repo (per deploy/.gitignore ausgeschlossen), wird aber laut paketieren.sh und ANLEITUNG.md manuell ins ausgelieferte Kundenpaket gelegt - also an Dritte weiterverbreitet.",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://caddyserver.com/download"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/caddyserver/caddy"
+        }
+      ],
+      "properties": [
+        {
+          "name": "audit:distributed",
+          "value": "JA - im Kundenpaket enthalten, auch wenn nicht im Repo"
+        },
+        {
+          "name": "audit:notice",
+          "value": "Caddy liefert selbst KEIN NOTICE aus; die Repo-Wurzel enthaelt nur LICENSE. Apache-2.0 Abschnitt 4d verlangt die Weitergabe nur, wenn das Werk eines enthaelt."
+        },
+        {
+          "name": "audit:attribution",
+          "value": "erfuellt - deploy/lizenzen/caddy/LICENSE liegt im Repo und wird nach licenses/caddy/ in beide Pakete kopiert"
+        },
+        {
+          "name": "audit:action_required",
+          "value": "Ausgelieferte Caddy-Version pinnen und dokumentieren"
+        }
+      ]
+    },
+    {
+      "bom-ref": "caddy-dns-plugins",
+      "type": "library",
+      "name": "Caddy DNS-Plugins (xcaddy-Build)",
+      "version": "unbekannt",
+      "scope": "optional",
+      "description": "Fuer die DNS-Challenge wird laut ANLEITUNG.md eine Caddy-Binary mit anbieterspezifischem DNS-Plugin gebaut (libdns-Module je nach Kunde).",
+      "licenses": [
+        {
+          "license": {
+            "name": "UNGEKLAERT - je Modul unterschiedlich, typisch MIT oder Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/libdns"
+        }
+      ],
+      "properties": [
+        {
+          "name": "audit:license_evidence",
+          "value": "NICHT VERIFIZIERT - haengt davon ab, welches Plugin je Kunde eingebaut wird"
+        },
+        {
+          "name": "audit:action_required",
+          "value": "Je ausgelieferter Binary die eingebauten Module und deren Lizenzen erfassen"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "root-statusmonitor",
+      "dependsOn": [
+        "file-license",
+        "file-notice",
+        "font-outfit",
+        "caddy"
+      ]
+    },
+    {
+      "ref": "file-license",
+      "dependsOn": []
+    },
+    {
+      "ref": "file-notice",
+      "dependsOn": []
+    },
+    {
+      "ref": "font-outfit",
+      "dependsOn": []
+    },
+    {
+      "ref": "caddy",
+      "dependsOn": [
+        "caddy-dns-plugins"
+      ]
+    },
+    {
+      "ref": "caddy-dns-plugins",
+      "dependsOn": []
+    }
+  ]
+}

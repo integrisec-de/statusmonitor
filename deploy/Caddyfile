@@ -1,0 +1,65 @@
+# ══════════════════════════════════════════════════════════════════
+# integrisec Statusmonitor – interne Auslieferung mit Caddy (statisch)
+#
+# Standard: HTTPS mit automatischem, ÖFFENTLICH vertrautem Zertifikat
+# (Let's Encrypt, DNS-Challenge) – grün im Browser, auch ohne dass der
+# Server von außen erreichbar ist. Caddy erneuert das Zertifikat selbst.
+#
+# Vor dem Betrieb anpassen (siehe ANLEITUNG.md):
+#   1. Hostname (echter FQDN unter eurer/der Kundendomain)
+#   2. tls { dns <provider> } passend zum DNS-Provider der Domain
+#   3. Editor-Login: caddy hash-password  → Hash unten eintragen
+# Token kommt aus der Umgebungsvariable DNS_API_TOKEN (Datei dns.env).
+# VORAUSSETZUNG: Caddy-Binary MIT dem DNS-Plugin des Providers.
+# Prüfen:  caddy validate --config Caddyfile
+# ══════════════════════════════════════════════════════════════════
+
+{
+	# E-Mail für Let's Encrypt (Ablauf-Hinweise). Anpassen.
+	email it@example.de
+}
+
+status.intern.example.de {
+	root * ./site
+	encode gzip
+	file_server
+
+	# Automatisches Zertifikat über die DNS-Challenge.
+	# Die Direktive nach "dns" ist der Provider-Name = caddy-dns/<name>.
+	# Die Binary muss genau dieses Plugin enthalten.
+	tls {
+		dns cloudflare {env.DNS_API_TOKEN}
+		# Anderer Provider? z. B.:
+		#   dns hetzner      {env.DNS_API_TOKEN}
+		#   dns digitalocean {env.DNS_API_TOKEN}
+		#   dns route53      {env.DNS_API_TOKEN}
+		#   dns azure        {env.DNS_API_TOKEN}
+		#   Vollständige Liste: https://github.com/caddy-dns
+	}
+
+	# Editor (admin.html) zusätzlich per Login schützen.
+	# Hash erzeugen:  caddy hash-password   (Benutzer: it)
+	@editor path /admin.html
+	basic_auth @editor {
+		it $2a$14$ERSETZEN.DURCH.BCRYPT.HASH.VON.CADDY.HASH-PASSWORD
+	}
+
+	log {
+		output file ./caddy-zugriff.log
+	}
+}
+
+# ══════════════════════════════════════════════════════════════════
+# FALLBACK – nur HTTP, kein Zertifikat. Nur in einem vertrauenswürdigen,
+# klar abgeschotteten Netzsegment verwenden. Dazu den HTTPS-Block oben
+# auskommentieren und diesen aktivieren:
+# ══════════════════════════════════════════════════════════════════
+# :8080 {
+# 	root * ./site
+# 	encode gzip
+# 	file_server
+# 	@editor path /admin.html
+# 	basic_auth @editor {
+# 		it $2a$14$ERSETZEN.DURCH.BCRYPT.HASH
+# 	}
+# }

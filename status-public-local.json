@@ -1,0 +1,148 @@
+{
+  "organisation": {
+    "name": "Stadtwerke Musterstadt",
+    "untertitel": "Systemstatus & Störungsinformationen",
+    "logoText": "SWM",
+    "kontaktEmail": "stoerung@sw-musterstadt.de",
+    "stand": "2026-06-23T09:15:00+02:00"
+  },
+  "gesamtstatus": "stoerung",
+  "einstellungen": {
+    "aufbewahrungErheblichTage": 1095,
+    "aufbewahrungStandardTage": 365
+  },
+  "komponentengruppen": [
+    {
+      "name": "Kundenservice",
+      "komponenten": [
+        {
+          "name": "Kundenportal",
+          "status": "betrieb",
+          "beschreibung": "Online-Konto, Zählerstände, Rechnungen",
+          "oeffentlich": true
+        },
+        {
+          "name": "Störungs-Hotline",
+          "status": "betrieb",
+          "beschreibung": "Telefonische Erreichbarkeit rund um die Uhr",
+          "oeffentlich": true
+        },
+        {
+          "name": "E-Mail-Eingang",
+          "status": "betrieb",
+          "beschreibung": "Postfächer service@ und info@",
+          "oeffentlich": true
+        }
+      ]
+    },
+    {
+      "name": "IT-Infrastruktur",
+      "komponenten": [
+        {
+          "name": "Website www.sw-musterstadt.de",
+          "status": "betrieb",
+          "beschreibung": "Öffentlicher Webauftritt",
+          "oeffentlich": true
+        },
+        {
+          "name": "E-Mail-Dienste",
+          "status": "stoerung",
+          "beschreibung": "Versand und Empfang von E-Mails",
+          "oeffentlich": true
+        }
+      ]
+    }
+  ],
+  "incidents": [
+    {
+      "id": "INC-2026-0042",
+      "titel": "Störung beim E-Mail-Versand",
+      "schweregrad": "erheblich",
+      "status": "aktiv",
+      "phase": "untersuchung",
+      "oeffentlich": true,
+      "betroffeneKomponenten": [
+        "E-Mail-Dienste"
+      ],
+      "beginn": "2026-06-23T07:40:00+02:00",
+      "behobenAm": null,
+      "updates": [
+        {
+          "zeit": "2026-06-23T09:00:00+02:00",
+          "phase": "untersuchung",
+          "text": "Die Ursache wird weiterhin untersucht. Eingehende E-Mails werden verzögert zugestellt. Wir arbeiten mit dem Dienstleister an einer Lösung."
+        },
+        {
+          "zeit": "2026-06-23T08:05:00+02:00",
+          "phase": "erkannt",
+          "text": "Wir haben eine Störung beim E-Mail-Versand festgestellt und die Untersuchung aufgenommen."
+        }
+      ]
+    },
+    {
+      "id": "INC-2026-0038",
+      "titel": "Störung bei Online-Zahlungen im Kundenportal",
+      "schweregrad": "gering",
+      "status": "behoben",
+      "phase": "behoben",
+      "oeffentlich": true,
+      "betroffeneKomponenten": [
+        "Kundenportal"
+      ],
+      "beginn": "2026-06-15T14:00:00+02:00",
+      "behobenAm": "2026-06-15T16:20:00+02:00",
+      "updates": [
+        {
+          "zeit": "2026-06-15T16:20:00+02:00",
+          "phase": "behoben",
+          "text": "Die Zahlungsabwicklung funktioniert wieder normal. Die Störung ist behoben."
+        },
+        {
+          "zeit": "2026-06-15T14:30:00+02:00",
+          "phase": "untersuchung",
+          "text": "Die Ursache wurde eingegrenzt; der Zahlungsdienstleister ist informiert."
+        },
+        {
+          "zeit": "2026-06-15T14:00:00+02:00",
+          "phase": "erkannt",
+          "text": "Online-Zahlungen schlagen fehl. Wir haben die Untersuchung aufgenommen."
+        }
+      ]
+    }
+  ],
+  "wartungen": [
+    {
+      "id": "WAR-2026-0011",
+      "titel": "Planmäßige Wartung Kundenportal",
+      "betroffeneKomponenten": [
+        "Kundenportal"
+      ],
+      "geplantBeginn": "2026-06-25T22:00:00+02:00",
+      "geplantEnde": "2026-06-26T02:00:00+02:00",
+      "beschreibung": "Im genannten Zeitraum wird das Kundenportal aktualisiert. Während des Wartungsfensters kann es kurzzeitig nicht erreichbar sein."
+    }
+  ],
+  "historie": [
+    {
+      "id": "INC-2026-0039",
+      "titel": "Kurzzeitige Nichterreichbarkeit Kundenportal",
+      "datum": "2026-06-18",
+      "dauer": "23 Minuten",
+      "status": "behoben"
+    },
+    {
+      "id": "WAR-2026-0009",
+      "titel": "Wartung Kundenportal abgeschlossen",
+      "datum": "2026-06-10",
+      "dauer": "2 Stunden",
+      "status": "abgeschlossen"
+    },
+    {
+      "id": "INC-2026-0035",
+      "titel": "Verzögerte Zählerstandsübermittlung",
+      "datum": "2026-06-03",
+      "dauer": "4 Stunden",
+      "status": "behoben"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+# ══════════════════════════════════════════════════════════════════
+# integrisec Statusmonitor – ÖFFENTLICHE Seite on-prem (DMZ, statt Cloudflare)
+#
+# Inhalt von site/ ist identisch zur Cloudflare-Auslieferung:
+#   index.html (public-Default), status.json, badge.js, assets/
+#
+# Ist der Server direkt aus dem Internet auf 80/443 erreichbar, holt Caddy das
+# Zertifikat automatisch per HTTP-Challenge – KEIN DNS-Plugin, KEIN Token nötig.
+# (Nicht öffentlich erreichbar? Dann DNS-Challenge wie im internen Caddyfile:
+#  tls { dns <provider> {env.DNS_API_TOKEN} } – Binary mit DNS-Plugin erforderlich.)
+#
+# Hostname unten anpassen. Prüfen: caddy validate --config Caddyfile
+# ══════════════════════════════════════════════════════════════════
+
+{
+	email it@example.de          # ACME-Kontakt für Let's Encrypt
+}
+
+status.ihre-domain.de {
+	root * ./site
+	encode gzip
+	file_server
+
+	log {
+		output file ./caddy-zugriff.log
+	}
+}

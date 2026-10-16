@@ -1,0 +1,5 @@
+# Die öffentliche Statusseite darf indexiert werden.
+# Ausgenommen ist der Editor. Hinweis: Noindex ist kein Zugangsschutz –
+# zur Absicherung siehe HANDBUCH.md A.4.
+User-agent: *
+Disallow: /admin.html

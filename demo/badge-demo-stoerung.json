@@ -1,0 +1,7 @@
+{
+  "gesamtstatus": "stoerung",
+  "organisation": { "name": "Demo" },
+  "incidents": [
+    { "id": "INC-DEMO-1", "status": "aktiv", "schweregrad": "gering", "titel": "Beispielstörung" }
+  ]
+}

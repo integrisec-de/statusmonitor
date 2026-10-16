@@ -1,0 +1,263 @@
+{
+  "organisation": {
+    "name": "Stadtwerke Musterstadt",
+    "untertitel": "Systemstatus & Störungsinformationen (Demo)",
+    "logoText": "SWM",
+    "kontaktEmail": "stoerung@sw-musterstadt.de",
+    "stand": "2026-06-23T09:15:00+02:00"
+  },
+  "gesamtstatus": "stoerung",
+  "einstellungen": {
+    "aufbewahrungErheblichTage": 1095,
+    "aufbewahrungStandardTage": 365
+  },
+  "komponentengruppen": [
+    {
+      "name": "Kundenservice",
+      "komponenten": [
+        {
+          "name": "Kundenportal",
+          "status": "betrieb",
+          "beschreibung": "Online-Konto, Zählerstände, Rechnungen",
+          "oeffentlich": true
+        },
+        {
+          "name": "Störungs-Hotline",
+          "status": "betrieb",
+          "beschreibung": "Telefonische Erreichbarkeit rund um die Uhr",
+          "oeffentlich": true
+        },
+        {
+          "name": "E-Mail-Eingang",
+          "status": "betrieb",
+          "beschreibung": "Postfächer service@ und info@",
+          "oeffentlich": true
+        }
+      ]
+    },
+    {
+      "name": "Netzbetrieb",
+      "komponenten": [
+        {
+          "name": "Netzleitstelle Strom",
+          "status": "betrieb",
+          "beschreibung": "Überwachung und Steuerung des Stromnetzes",
+          "oeffentlich": false
+        },
+        {
+          "name": "Smart-Meter-Gateway",
+          "status": "eingeschraenkt",
+          "beschreibung": "Fernauslesung intelligenter Messsysteme",
+          "oeffentlich": false
+        },
+        {
+          "name": "Abwasser-Telemetrie",
+          "status": "betrieb",
+          "beschreibung": "Fernüberwachung Pumpwerke und Klärwerk",
+          "oeffentlich": false
+        }
+      ]
+    },
+    {
+      "name": "IT-Infrastruktur",
+      "komponenten": [
+        {
+          "name": "Website www.sw-musterstadt.de",
+          "status": "betrieb",
+          "beschreibung": "Öffentlicher Webauftritt",
+          "oeffentlich": true
+        },
+        {
+          "name": "E-Mail-Dienste",
+          "status": "stoerung",
+          "beschreibung": "Versand und Empfang von E-Mails",
+          "oeffentlich": true
+        },
+        {
+          "name": "VPN-Fernzugriff",
+          "status": "wartung",
+          "beschreibung": "Gesicherter Zugriff für Außendienst",
+          "oeffentlich": false
+        }
+      ]
+    },
+    {
+      "name": "Interne Systeme (nur intern)",
+      "komponenten": [
+        {
+          "name": "Sicherheitsmonitoring (SIEM)",
+          "status": "betrieb",
+          "beschreibung": "Zentrale Auswertung sicherheitsrelevanter Ereignisse",
+          "oeffentlich": false
+        },
+        {
+          "name": "Backup-Infrastruktur",
+          "status": "betrieb",
+          "beschreibung": "Sicherung und Wiederherstellung kritischer Systeme",
+          "oeffentlich": false
+        }
+      ]
+    }
+  ],
+  "incidents": [
+    {
+      "id": "INC-2026-0042",
+      "titel": "Störung beim E-Mail-Versand",
+      "schweregrad": "erheblich",
+      "status": "aktiv",
+      "phase": "untersuchung",
+      "oeffentlich": true,
+      "verantwortlich": "M. Beispiel, IT-Leitung",
+      "betroffeneKomponenten": [
+        "E-Mail-Dienste"
+      ],
+      "beginn": "2026-06-23T07:40:00+02:00",
+      "behobenAm": null,
+      "interneNotiz": "Dienstleister-Support kontaktiert (Beispiel-Ticket). Ursache vermutlich ein fehlerhaft ausgerolltes Transport-Regelwerk. Kein Hinweis auf Datenabfluss.",
+      "aufbewahrenBis": "2029-06-22T07:40:00+02:00",
+      "nis2": {
+        "erheblicherVorfall": true,
+        "erstmeldungFaellig": "2026-06-24T07:40:00+02:00",
+        "folgemeldungFaellig": "2026-06-26T07:40:00+02:00",
+        "abschlussFaellig": "2026-07-23T07:40:00+02:00"
+      },
+      "updates": [
+        {
+          "zeit": "2026-06-23T09:00:00+02:00",
+          "phase": "untersuchung",
+          "bearbeiter": "M. Beispiel, IT-Leitung",
+          "text": "Die Ursache wird weiterhin untersucht. Eingehende E-Mails werden verzögert zugestellt. Wir arbeiten mit dem Dienstleister an einer Lösung."
+        },
+        {
+          "zeit": "2026-06-23T08:05:00+02:00",
+          "phase": "erkannt",
+          "bearbeiter": "Service-Desk (Demo)",
+          "text": "Wir haben eine Störung beim E-Mail-Versand festgestellt und die Untersuchung aufgenommen."
+        }
+      ]
+    },
+    {
+      "id": "INC-2026-0041",
+      "titel": "Auffällige Anmeldeversuche am VPN-Gateway",
+      "schweregrad": "erheblich",
+      "status": "aktiv",
+      "phase": "untersuchung",
+      "oeffentlich": false,
+      "verantwortlich": "A. Muster, Informationssicherheit",
+      "betroffeneKomponenten": [
+        "VPN-Fernzugriff",
+        "Sicherheitsmonitoring (SIEM)"
+      ],
+      "beginn": "2026-06-22T18:30:00+02:00",
+      "behobenAm": null,
+      "interneNotiz": "Ungewöhnliche Häufung fehlgeschlagener Anmeldungen aus wechselnden Quell-Netzen. Betroffene Konten vorsorglich gesperrt, Geo-Sperre aktiviert. Nicht öffentlich kommunizieren, solange die Lage nicht abschließend bewertet ist.",
+      "aufbewahrenBis": "2029-06-21T18:30:00+02:00",
+      "nis2": {
+        "erheblicherVorfall": true,
+        "erstmeldungFaellig": "2026-06-23T18:30:00+02:00",
+        "folgemeldungFaellig": "2026-06-25T18:30:00+02:00",
+        "abschlussFaellig": "2026-07-22T18:30:00+02:00"
+      },
+      "updates": [
+        {
+          "zeit": "2026-06-23T09:10:00+02:00",
+          "phase": "untersuchung",
+          "bearbeiter": "A. Muster, Informationssicherheit",
+          "text": "Die Anmeldeversuche werden analysiert. Betroffene Konten wurden vorsorglich gesperrt, der Zugriff zusätzlich eingeschränkt."
+        },
+        {
+          "zeit": "2026-06-22T18:30:00+02:00",
+          "phase": "erkannt",
+          "bearbeiter": "Sicherheitsmonitoring (automatisch)",
+          "text": "Das Sicherheitsmonitoring meldet eine ungewöhnliche Häufung fehlgeschlagener VPN-Anmeldungen."
+        }
+      ]
+    },
+    {
+      "id": "INC-2026-0038",
+      "titel": "Störung bei Online-Zahlungen im Kundenportal",
+      "schweregrad": "gering",
+      "status": "behoben",
+      "phase": "behoben",
+      "oeffentlich": true,
+      "verantwortlich": "",
+      "betroffeneKomponenten": [
+        "Kundenportal"
+      ],
+      "beginn": "2026-06-15T14:00:00+02:00",
+      "behobenAm": "2026-06-15T16:20:00+02:00",
+      "interneNotiz": "",
+      "updates": [
+        {
+          "zeit": "2026-06-15T16:20:00+02:00",
+          "phase": "behoben",
+          "bearbeiter": "",
+          "text": "Die Zahlungsabwicklung funktioniert wieder normal. Die Störung ist behoben."
+        },
+        {
+          "zeit": "2026-06-15T14:00:00+02:00",
+          "phase": "erkannt",
+          "bearbeiter": "",
+          "text": "Online-Zahlungen schlagen fehl. Wir haben die Untersuchung aufgenommen."
+        }
+      ]
+    },
+    {
+      "id": "INC-2026-0037",
+      "titel": "Verzögerte Anzeige im Kundenportal",
+      "schweregrad": "gering",
+      "status": "behoben",
+      "phase": "behoben",
+      "oeffentlich": true,
+      "verantwortlich": "",
+      "betroffeneKomponenten": [
+        "Kundenportal"
+      ],
+      "beginn": "2026-06-11T09:00:00+02:00",
+      "behobenAm": "2026-06-11T10:30:00+02:00",
+      "interneNotiz": "",
+      "updates": [
+        {
+          "zeit": "2026-06-11T10:30:00+02:00",
+          "phase": "behoben",
+          "bearbeiter": "",
+          "text": "Die Anzeige ist wieder aktuell. Die Verzögerung war Folge eines Cache-Problems."
+        },
+        {
+          "zeit": "2026-06-11T09:00:00+02:00",
+          "phase": "erkannt",
+          "bearbeiter": "",
+          "text": "Im Kundenportal werden Daten verzögert angezeigt. Untersuchung läuft."
+        }
+      ]
+    }
+  ],
+  "wartungen": [
+    {
+      "id": "WAR-2026-0011",
+      "titel": "Planmäßige Wartung Kundenportal",
+      "betroffeneKomponenten": [
+        "Kundenportal"
+      ],
+      "geplantBeginn": "2026-06-25T22:00:00+02:00",
+      "geplantEnde": "2026-06-26T02:00:00+02:00",
+      "beschreibung": "Im genannten Zeitraum wird das Kundenportal aktualisiert. Während des Wartungsfensters kann es kurzzeitig nicht erreichbar sein."
+    }
+  ],
+  "historie": [
+    {
+      "id": "INC-2026-0035",
+      "titel": "Verzögerte Zählerstandsübermittlung",
+      "datum": "2026-06-03",
+      "dauer": "4 Stunden",
+      "status": "behoben"
+    },
+    {
+      "id": "WAR-2026-0009",
+      "titel": "Wartung Kundenportal abgeschlossen",
+      "datum": "2026-05-28",
+      "dauer": "2 Stunden",
+      "status": "abgeschlossen"
+    }
+  ]
+}

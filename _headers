@@ -1,0 +1,4 @@
+# Cloudflare Pages: gezielt nur der Editor, nicht global –
+# die öffentliche Statusseite soll indexierbar bleiben.
+/admin.html
+  X-Robots-Tag: noindex, nofollow

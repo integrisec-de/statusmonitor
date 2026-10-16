@@ -1,0 +1,30 @@
+[Unit]
+Description=integrisec Statusmonitor (öffentlich, Caddy)
+Documentation=https://github.com/smaicloud/statusmonitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=statusmonitor
+Group=statusmonitor
+WorkingDirectory=/opt/statusmonitor-public
+ExecStart=/opt/statusmonitor-public/caddy run --config /opt/statusmonitor-public/Caddyfile
+ExecReload=/opt/statusmonitor-public/caddy reload --config /opt/statusmonitor-public/Caddyfile
+Restart=on-failure
+RestartSec=5
+
+# Erlaubt dem Nicht-Root-Benutzer, die Ports 80/443 zu binden (für HTTPS).
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+# Bei DNS-Challenge (nicht öffentlich erreichbar) zusätzlich das Token laden:
+# EnvironmentFile=-/opt/statusmonitor-public/dns.env
+
+# Härtung
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

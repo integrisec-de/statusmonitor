@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Systemstatus</title>
+<style>
+/* Outfit lokal gehostet – DSGVO-konform, identisch zum Besuchermanagement.
+   Fällt auf Systemschrift zurück, falls die Font-Dateien fehlen (z. B. Vorschau). */
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:400; font-display:swap; src:url('/assets/fonts/outfit-400.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:500; font-display:swap; src:url('/assets/fonts/outfit-500.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:600; font-display:swap; src:url('/assets/fonts/outfit-600.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:700; font-display:swap; src:url('/assets/fonts/outfit-700.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:800; font-display:swap; src:url('/assets/fonts/outfit-800.woff2') format('woff2'); }
+
+:root {
+  --font: 'Outfit', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  --radius: 12px;
+}
+
+/* ---------- LIGHT THEME (integrisec CI – Standard) ---------- */
+html[data-theme="light"] {
+  --bg:        #f4f7fb;
+  --panel:     #ffffff;
+  --panel-2:   #f4f7fb;
+  --border:    #dde4f0;
+  --border-soft:#e8eef7;
+  --navy:      #0e1e3d;
+  --text:      #18243a;
+  --muted:     #5e738a;
+  --faint:     #94a3b8;
+  --accent:    #1a4fd6;
+  --accent-lt: #e8effc;
+  --ok:        #00c896;
+  --ok-text:   #007a5e;
+  --ok-lt:     #e0faf3;
+  --warn:      #b45309;
+  --warn-lt:   #fef3c7;
+  --maint:     #1a4fd6;
+  --maint-lt:  #e8effc;
+  --crit:      #dc2626;
+  --crit-text: #dc2626;
+  --crit-lt:   #fef2f2;
+  --sh:        0 2px 8px rgba(14,30,61,0.07), 0 12px 32px rgba(14,30,61,0.06);
+}
+
+/* ---------- DARK THEME (Leitstellen-Look) ---------- */
+html[data-theme="dark"] {
+  --bg:        #1a2030;
+  --panel:     #232b3d;
+  --panel-2:   #2a3349;
+  --border:    #3a445c;
+  --border-soft:#313a4e;
+  --navy:      #eef2f8;
+  --text:      #eef2f8;
+  --muted:     #a6b1c4;
+  --faint:     #7d899e;
+  --accent:    #4d9bff;
+  --accent-lt: rgba(77,155,255,.14);
+  --ok:        #3fb950;
+  --ok-text:   #56d364;
+  --ok-lt:     rgba(63,185,80,.14);
+  --warn:      #d29922;
+  --warn-lt:   rgba(210,153,34,.14);
+  --maint:     #a371f7;
+  --maint-lt:  rgba(137,87,229,.16);
+  --crit:      #f85149;
+  --crit-text: #ff8a84;
+  --crit-lt:   rgba(248,81,73,.13);
+  --sh:        0 2px 8px rgba(0,0,0,.25), 0 12px 32px rgba(0,0,0,.3);
+}
+
+/* Unterdrückt Transitions beim Theme-/Farbwechsel */
+html.theme-swap, html.theme-swap * { transition: none !important; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  padding: 20px;
+  transition: background .2s, color .2s;
+}
+.container { max-width: 920px; margin: 0 auto; }
+
+/* ---- Topbar ---- */
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: var(--sh);
+  margin-bottom: 22px;
+}
+.logo {
+  width: 46px; height: 46px; flex: 0 0 46px;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 16px; letter-spacing: 0.3px;
+  color: #fff; background: var(--accent);
+}
+.brand-title { font-size: 1.3rem; font-weight: 800; color: var(--navy); letter-spacing: -0.4px; }
+.brand-sub { font-size: 0.92rem; color: var(--muted); }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--panel-2);
+  color: var(--muted); cursor: pointer; font-size: 17px;
+  display: grid; place-items: center;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---- Banner ---- */
+.banner {
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  display: flex; align-items: center; gap: 16px;
+  background: var(--panel);
+  box-shadow: var(--sh);
+  position: relative; overflow: hidden;
+}
+.banner::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+.banner.s-betrieb::before { background: var(--ok); }
+.banner.s-eingeschraenkt::before, .banner.s-wartung::before { background: var(--warn); }
+.banner.s-stoerung::before { background: var(--crit); }
+.banner-dot { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 14px; }
+.banner.s-betrieb .banner-dot { background: var(--ok); box-shadow: 0 0 0 4px var(--ok-lt); }
+.banner.s-eingeschraenkt .banner-dot, .banner.s-wartung .banner-dot { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-lt); }
+.banner.s-stoerung .banner-dot { background: var(--crit); box-shadow: 0 0 0 4px var(--crit-lt); }
+.banner-text { font-size: 1.25rem; font-weight: 700; color: var(--navy); }
+.banner-stand { margin-left: auto; font-family: var(--mono); font-size: 0.8rem; color: var(--faint); text-align: right; }
+
+/* ---- Sections ---- */
+section { margin: 28px 0; }
+.sec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+.sec-head h2 { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.sec-head .count { font-family: var(--mono); font-size: 0.82rem; color: var(--faint); background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; }
+
+/* ---- Components ---- */
+.group { margin-bottom: 18px; }
+.group-title { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 9px; }
+.comp {
+  display: flex; align-items: center; gap: 13px;
+  padding: 14px 17px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: var(--sh);
+}
+.comp-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; }
+.s-betrieb .comp-dot { background: var(--ok); }
+.s-eingeschraenkt .comp-dot { background: var(--warn); }
+.s-stoerung .comp-dot { background: var(--crit); }
+.s-wartung .comp-dot { background: var(--maint); }
+.comp-body { flex: 1; min-width: 0; }
+.comp-name { font-size: 1rem; font-weight: 600; color: var(--text); }
+.comp-desc { font-size: 0.85rem; color: var(--muted); }
+.comp-status {
+  font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 3px 11px; border-radius: 999px; white-space: nowrap;
+}
+.badge-betrieb { color: var(--ok-text); background: var(--ok-lt); }
+.badge-eingeschraenkt { color: var(--warn); background: var(--warn-lt); }
+.badge-stoerung { color: var(--crit-text); background: var(--crit-lt); }
+.badge-wartung { color: var(--maint); background: var(--maint-lt); }
+
+/* ---- Incident / maintenance cards ---- */
+.incident, .maint {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: var(--sh);
+}
+.incident-top { padding: 17px 19px; border-bottom: 1px solid var(--border-soft); }
+.incident-title-row { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.incident-title { font-size: 1.1rem; font-weight: 700; color: var(--navy); flex: 1; min-width: 200px; }
+.incident-meta { font-family: var(--mono); font-size: 0.78rem; color: var(--faint); margin-top: 5px; }
+.sev { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 6px; }
+.sev-erheblich { color: var(--crit-text); background: var(--crit-lt); border: 1px solid var(--crit); }
+.sev-gering { color: var(--warn); background: var(--warn-lt); border: 1px solid var(--warn); }
+.sev-geplant { color: var(--maint); background: var(--maint-lt); border: 1px solid var(--maint); }
+
+/* ---- NIS2 box (prominent) ---- */
+.nis2 {
+  margin-top: 16px;
+  background: var(--crit-lt);
+  border: 1px solid var(--crit);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.nis2-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--crit-lt); border-bottom: 1px solid var(--crit); }
+.nis2-badge { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 6px; background: var(--crit); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+.nis2-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--crit-text); font-weight: 800; }
+.nis2-sub { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+.nis2-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--border); }
+.nis2-item { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; background: var(--panel); }
+.nis2-item.is-over { background: var(--crit-lt); }
+.nis2-item .k { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.nis2-item .v { font-family: var(--mono); font-size: 0.82rem; color: var(--text); }
+.nis2-count { font-family: var(--mono); font-size: 1.15rem; font-weight: 700; }
+.nis2-count.ok { color: var(--ok-text); }
+.nis2-count.soon { color: var(--warn); }
+.nis2-count.over { color: var(--crit-text); }
+.nis2-flag { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 5px; align-self: flex-start; }
+.nis2-flag.ok { color: var(--ok-text); background: var(--ok-lt); }
+.nis2-flag.soon { color: var(--warn); background: var(--warn-lt); }
+.nis2-flag.over { color: var(--crit-text); background: var(--crit-lt); }
+
+/* ---- Update timeline ---- */
+.updates { padding: 6px 19px 14px; }
+.update { display: flex; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border-soft); }
+.update:last-child { border-bottom: none; }
+.update-rail { flex: 0 0 8px; display: flex; flex-direction: column; align-items: center; padding-top: 5px; }
+.update-node { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); }
+.update:first-child .update-node { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-lt); }
+.update-body { flex: 1; }
+.update-phase { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 700; }
+.update-time { font-family: var(--mono); font-size: 0.76rem; color: var(--faint); margin-left: 8px; }
+.update-text { font-size: 0.95rem; color: var(--text); margin-top: 4px; }
+
+.maint-body { padding: 15px 19px; }
+.maint-window { font-family: var(--mono); font-size: 0.85rem; color: var(--maint); margin: 6px 0 8px; font-weight: 600; }
+.maint-desc { font-size: 0.95rem; color: var(--muted); }
+
+/* ---- History ---- */
+.hist-wrap { border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); overflow: hidden; box-shadow: var(--sh); }
+.hist-row { display: flex; align-items: center; gap: 13px; padding: 13px 17px; border-bottom: 1px solid var(--border-soft); font-size: 0.92rem; }
+.hist-row:last-child { border-bottom: none; }
+.hist-date { font-family: var(--mono); font-size: 0.78rem; color: var(--faint); flex: 0 0 96px; }
+.hist-title { flex: 1; color: var(--text); }
+.hist-dur { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+.hist-status { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--ok-text); background: var(--ok-lt); padding: 2px 8px; border-radius: 5px; }
+
+.empty { color: var(--muted); font-size: 0.95rem; padding: 16px 18px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--sh); }
+
+/* ---- Footer ---- */
+footer { border-top: 1px solid var(--border); margin-top: 44px; padding: 24px 0; font-size: 0.82rem; color: var(--faint); }
+.footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); text-decoration: underline; }
+.powered b { color: var(--muted); font-weight: 700; }
+
+/* ---- Farb-Editor (Panel) ---- */
+.editor {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 320px; max-width: 90vw;
+  background: var(--panel); border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(0,0,0,.18);
+  padding: 20px; overflow-y: auto; z-index: 100;
+  transform: translateX(100%); transition: transform .25s;
+}
+.editor.open { transform: translateX(0); }
+.editor h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.editor .hint { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+.editor-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; }
+.pal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.pal-row input[type="color"] { width: 38px; height: 32px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); cursor: pointer; }
+.pal-row .hex { width: 90px; font-family: var(--mono); font-size: 0.82rem; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-2); color: var(--text); }
+.pal-row .pal-label { font-size: 0.85rem; color: var(--muted); flex: 1; }
+.editor-actions { display: flex; gap: 8px; margin-top: 18px; }
+.editor-actions button { flex: 1; font-family: var(--font); font-size: 0.85rem; font-weight: 600; padding: 9px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); }
+.btn-reset { background: var(--panel-2); color: var(--text); }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+.editor-theme-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.editor-theme-row button { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); cursor: pointer; font-family: var(--font); font-weight: 600; font-size: 0.85rem; }
+.editor-theme-row button.active { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+
+/* ---- Demo-Leiste (Ansicht "demo") ---- */
+.demo-bar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: var(--ok-lt); color: var(--ok-text);
+  border: 1px solid var(--ok); border-radius: var(--radius);
+  padding: 12px 16px; margin-bottom: 18px;
+}
+.demo-bar-text { font-weight: 600; font-size: 0.92rem; }
+.demo-toggle { margin-left: auto; display: flex; gap: 6px; }
+.demo-toggle button {
+  font-family: var(--font); font-size: 0.82rem; font-weight: 600;
+  padding: 6px 14px; border-radius: 8px; border: 1px solid var(--ok);
+  background: transparent; color: var(--ok-text); cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.demo-toggle button.active { background: var(--ok); color: #fff; }
+
+/* ---- Kennzeichnung "nur intern" (Ansicht "intern"/"demo") ---- */
+.intern-only {
+  font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--maint); background: var(--maint-lt); border: 1px solid var(--maint);
+  padding: 2px 8px; border-radius: 5px; white-space: nowrap;
+}
+.intern-note {
+  margin-top: 14px; background: var(--panel-2);
+  border: 1px solid var(--border); border-left: 3px solid var(--maint);
+  border-radius: 8px; padding: 11px 14px;
+}
+.intern-note-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--maint); }
+.intern-note-text { font-size: 0.92rem; color: var(--text); margin-top: 4px; white-space: pre-wrap; }
+
+/* ---- Nachweis-/Bearbeiter-Felder (intern) ---- */
+.incident-resp { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+.incident-resp b { color: var(--text); font-weight: 600; }
+.update-bearbeiter { font-family: var(--mono); font-size: 0.74rem; color: var(--maint); margin-left: 8px; }
+.hist-intern-only { margin-left: 8px; }
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+
+  /* Topbar kompakt; langer Titel kürzt mit Ellipsis statt die Seite zu sprengen */
+  .topbar { padding: 12px 14px; gap: 10px; }
+  .topbar > div { min-width: 0; }
+  .logo { width: 40px; height: 40px; flex: 0 0 40px; font-size: 14px; }
+  .brand-title { font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-actions { gap: 6px; }
+
+  .banner { flex-wrap: wrap; }
+  .banner-stand { margin-left: 0; width: 100%; text-align: left; }
+
+  .incident-title { min-width: 0; }
+
+  /* NIS-2-Kopf darf umbrechen; Zusatztext rückt in die nächste Zeile */
+  .nis2-header { flex-wrap: wrap; }
+  .nis2-sub { margin-left: 0; flex-basis: 100%; }
+
+  /* Komponentenzeile etwas kompakter, damit lange Statusbadges passen */
+  .comp { gap: 10px; padding: 12px 14px; flex-wrap: wrap; }
+  .comp-body { flex: 1 1 100%; order: -1; }
+  .comp-status { padding: 3px 8px; margin-left: auto; }
+
+  /* Letzte Ereignisse: Titel volle Zeile, Datum/Dauer/Status darunter (kein Abschneiden) */
+  .hist-row { flex-wrap: wrap; gap: 4px 10px; }
+  .hist-date { flex: 0 0 auto; }
+  .hist-title { flex: 1 1 100%; order: -1; }
+  .hist-status { margin-left: auto; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="viewBar"></div>
+  <div class="topbar">
+    <div class="logo" id="logo">SW</div>
+    <div>
+      <div class="brand-title" id="orgName">Systemstatus</div>
+      <div class="brand-sub" id="orgSub">wird geladen …</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeToggle" title="Hell/Dunkel umschalten"></button>
+      <button class="icon-btn" id="editorToggle" title="Farben anpassen">✎</button>
+    </div>
+  </div>
+
+  <main id="app">
+    <div class="empty">Statusdaten werden geladen …</div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div>Bei Fragen zu Störungen: <a id="contact" href="#">Kontakt</a></div>
+      <div class="powered">betrieben mit <a href="https://integrisec.de" target="_blank" rel="noopener"><b>integrisec</b></a> Statusmonitor</div>
+    </div>
+  </footer>
+</div>
+
+<!-- Farb-Editor -->
+<div class="editor" id="editor">
+  <button class="editor-close" id="editorClose">×</button>
+  <h3>Darstellung anpassen</h3>
+  <p class="hint">Theme und Akzentfarben. Änderungen werden lokal im Browser gespeichert.</p>
+  <div class="editor-theme-row">
+    <button data-theme-set="light" id="setLight">Hell</button>
+    <button data-theme-set="dark" id="setDark">Dunkel</button>
+  </div>
+  <div id="palette"></div>
+  <div class="editor-actions">
+    <button class="btn-reset" id="resetColors">Zurücksetzen</button>
+  </div>
+</div>
+
+<script>
+const STATUS_LABEL = { betrieb: "Betrieb", eingeschraenkt: "Eingeschränkt", stoerung: "Störung", wartung: "Wartung" };
+const BANNER_TEXT = {
+  betrieb: "Alle Systeme arbeiten normal", eingeschraenkt: "Eingeschränkter Betrieb",
+  wartung: "Wartungsarbeiten aktiv", stoerung: "Aktive Störung gemeldet"
+};
+const PHASE_LABEL = {
+  erkannt: "Erkannt", untersuchung: "Wird untersucht", identifiziert: "Ursache identifiziert",
+  beobachtung: "Wird beobachtet", behoben: "Behoben"
+};
+
+/* ---------- Theme & Farb-Editor ---------- */
+const THEME_KEY = "isec-status-theme";
+const COLOR_KEY = "isec-status-colors";
+const EDITABLE = [
+  ["--accent", "Akzent / Links"],
+  ["--ok", "Betrieb (grün)"],
+  ["--warn", "Eingeschränkt (gelb)"],
+  ["--maint", "Wartung"],
+  ["--crit", "Störung (rot)"]
+];
+
+function getStore(key){ try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; } }
+function setStore(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+function currentTheme(){ return document.documentElement.getAttribute("data-theme") || "light"; }
+
+function applyTheme(theme){
+  document.documentElement.classList.add("theme-swap");
+  document.documentElement.setAttribute("data-theme", theme);
+  try { localStorage.setItem(THEME_KEY, theme); } catch {}
+  applyStoredColors();
+  syncEditorThemeButtons();
+  requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove("theme-swap")));
+}
+
+function applyStoredColors(){
+  const theme = currentTheme();
+  const cols = (getStore(COLOR_KEY)[theme]) || {};
+  EDITABLE.forEach(([v]) => document.documentElement.style.removeProperty(v));
+  Object.entries(cols).forEach(([v, hex]) => document.documentElement.style.setProperty(v, hex));
+}
+
+function readComputed(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || "#000000"; }
+function toHex(c){
+  if (/^#[0-9a-f]{6}$/i.test(c)) return c;
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.fillStyle = c; return ctx.fillStyle;
+}
+
+function buildPalette(){
+  const wrap = document.getElementById("palette");
+  const theme = currentTheme();
+  const stored = (getStore(COLOR_KEY)[theme]) || {};
+  wrap.innerHTML = EDITABLE.map(([v, label]) => {
+    const val = toHex(stored[v] || readComputed(v));
+    return `<div class="pal-row">
+      <input type="color" data-var="${v}" value="${val}">
+      <input type="text" class="hex" data-var="${v}" value="${val}">
+      <span class="pal-label">${label}</span>
+    </div>`;
+  }).join("");
+  wrap.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const v = e.target.dataset.var;
+      let hex = e.target.value;
+      if (e.target.type === "text" && !/^#[0-9a-f]{6}$/i.test(hex)) return;
+      document.documentElement.style.setProperty(v, hex);
+      wrap.querySelectorAll(`[data-var="${v}"]`).forEach(o => { if (o !== e.target) o.value = hex; });
+      const all = getStore(COLOR_KEY);
+      all[theme] = all[theme] || {};
+      all[theme][v] = hex;
+      setStore(COLOR_KEY, all);
+    });
+  });
+}
+
+function syncEditorThemeButtons(){
+  const t = currentTheme();
+  document.getElementById("setLight").classList.toggle("active", t === "light");
+  document.getElementById("setDark").classList.toggle("active", t === "dark");
+  const tt = document.getElementById("themeToggle");
+  if (tt) tt.textContent = t === "light" ? "🌙" : "☀";
+}
+
+(function initTheme(){
+  let t = "light";
+  try { t = localStorage.getItem(THEME_KEY) || "light"; } catch {}
+  document.documentElement.setAttribute("data-theme", t);
+})();
+
+window.addEventListener("DOMContentLoaded", () => {
+  applyStoredColors();
+  syncEditorThemeButtons();
+  document.getElementById("themeToggle").onclick = () => applyTheme(currentTheme() === "light" ? "dark" : "light");
+  const editor = document.getElementById("editor");
+  document.getElementById("editorToggle").onclick = () => { buildPalette(); syncEditorThemeButtons(); editor.classList.add("open"); };
+  document.getElementById("editorClose").onclick = () => editor.classList.remove("open");
+  document.getElementById("setLight").onclick = () => { applyTheme("light"); buildPalette(); };
+  document.getElementById("setDark").onclick = () => { applyTheme("dark"); buildPalette(); };
+  document.getElementById("resetColors").onclick = () => {
+    const all = getStore(COLOR_KEY); delete all[currentTheme()]; setStore(COLOR_KEY, all);
+    applyStoredColors(); buildPalette();
+  };
+});
+
+/* ---------- Formatierung ---------- */
+function fmtDateTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) + " Uhr";
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+function dauerText(von, bis) {
+  if (!von || !bis) return "";
+  const ms = new Date(bis) - new Date(von);
+  if (!(ms > 0)) return "";
+  const min = Math.round(ms / 60000);
+  const t = Math.floor(min / 1440), std = Math.floor((min % 1440) / 60), m = min % 60;
+  if (t > 0) return `${t} T ${std} Std`;
+  if (std > 0) return `${std} Std ${m} Min`;
+  return `${m} Min`;
+}
+function esc(s) { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
+
+/* ---------- NIS2-Countdown ---------- */
+function fristStatus(iso) {
+  const ziel = new Date(iso).getTime();
+  const diff = ziel - Date.now();
+  const abs = Math.abs(diff);
+  const tage = Math.floor(abs / 86400000);
+  const std = Math.floor((abs % 86400000) / 3600000);
+  const min = Math.floor((abs % 3600000) / 60000);
+  let rest;
+  if (tage > 0) rest = `${tage} T ${std} Std`;
+  else if (std > 0) rest = `${std} Std ${min} Min`;
+  else rest = `${min} Min`;
+  if (diff < 0) return { cls: "over", flag: "Frist überschritten", rest: "+ " + rest };
+  if (diff < 4 * 3600000) return { cls: "soon", flag: "Frist läuft", rest: "noch " + rest };
+  return { cls: "ok", flag: "Offen", rest: "noch " + rest };
+}
+function nis2Item(titel, fenster, iso) {
+  const s = fristStatus(iso);
+  return `<div class="nis2-item ${s.cls === "over" ? "is-over" : ""}">
+    <span class="k">${titel} <span style="color:var(--faint);font-weight:400">(${fenster})</span></span>
+    <span class="nis2-count ${s.cls}" data-frist="${iso}">${s.rest}</span>
+    <span class="v">fällig: ${fmtDateTime(iso)}</span>
+    <span class="nis2-flag ${s.cls}">${s.flag}</span>
+  </div>`;
+}
+
+/* ---------- Render ---------- */
+function render(data, opts) {
+  const intern = !!(opts && opts.intern);
+  const org = data.organisation || {};
+  document.title = "Systemstatus – " + (org.name || "");
+  document.getElementById("logo").textContent = org.logoText || "ST";
+  document.getElementById("orgName").textContent = org.name || "Systemstatus";
+  document.getElementById("orgSub").textContent = org.untertitel || "";
+  if (org.kontaktEmail) {
+    const c = document.getElementById("contact");
+    c.href = "mailto:" + org.kontaktEmail; c.textContent = org.kontaktEmail;
+  }
+
+  const gs = data.gesamtstatus || "betrieb";
+  let html = "";
+
+  html += `<div class="banner s-${esc(gs)}">
+    <span class="banner-dot"></span>
+    <span class="banner-text">${esc(BANNER_TEXT[gs] || "Status unbekannt")}</span>
+    <span class="banner-stand">Stand<br>${org.stand ? fmtDateTime(org.stand) : "–"}</span>
+  </div>`;
+
+  const allInc = data.incidents || [];
+  const aktive = allInc.filter(i => i.status !== "behoben");
+  html += `<section><div class="sec-head"><h2>Aktuelle Störungen</h2><span class="count">${aktive.length}</span></div>`;
+  if (!aktive.length) {
+    html += `<div class="empty">Derzeit sind keine Störungen gemeldet.</div>`;
+  } else {
+    aktive.forEach(i => {
+      const sevCls = i.schweregrad === "erheblich" ? "sev-erheblich" : "sev-gering";
+      const sevLbl = i.schweregrad === "erheblich" ? "Erheblicher Vorfall" : "Geringfügig";
+      html += `<div class="incident">
+        <div class="incident-top">
+          <div class="incident-title-row">
+            <span class="incident-title">${esc(i.titel)}</span>
+            ${intern && i.oeffentlich === false ? `<span class="intern-only">nur intern</span>` : ""}
+            <span class="sev ${sevCls}">${sevLbl}</span>
+          </div>
+          <div class="incident-meta">${esc(i.id)} · Beginn ${fmtDateTime(i.beginn)} · betrifft: ${(i.betroffeneKomponenten||[]).map(esc).join(", ")}</div>`;
+      if (intern && i.verantwortlich) {
+        html += `<div class="incident-resp">Verantwortlich: <b>${esc(i.verantwortlich)}</b></div>`;
+      }
+      if (intern && i.nis2 && i.nis2.erheblicherVorfall) {
+        html += `<div class="nis2">
+          <div class="nis2-header">
+            <span class="nis2-badge">!</span>
+            <span class="nis2-label">NIS-2 Meldefristen · § 32 BSIG</span>
+            <span class="nis2-sub">Meldepflichtiger Sicherheitsvorfall</span>
+          </div>
+          <div class="nis2-grid">
+            ${nis2Item("Erstmeldung", "24 h", i.nis2.erstmeldungFaellig)}
+            ${nis2Item("Folgemeldung", "72 h", i.nis2.folgemeldungFaellig)}
+            ${nis2Item("Abschlussmeldung", "1 Monat", i.nis2.abschlussFaellig)}
+          </div>
+        </div>`;
+      }
+      if (intern && i.interneNotiz) {
+        html += `<div class="intern-note">
+          <span class="intern-note-label">Interne Notiz · nur intern</span>
+          <div class="intern-note-text">${esc(i.interneNotiz)}</div>
+        </div>`;
+      }
+      html += `</div><div class="updates">`;
+      (i.updates||[]).forEach(u => {
+        html += `<div class="update">
+          <div class="update-rail"><span class="update-node"></span></div>
+          <div class="update-body">
+            <span class="update-phase">${esc(PHASE_LABEL[u.phase] || u.phase)}</span>
+            <span class="update-time">${fmtDateTime(u.zeit)}</span>${intern && u.bearbeiter ? `<span class="update-bearbeiter">${esc(u.bearbeiter)}</span>` : ""}
+            <div class="update-text">${esc(u.text)}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+  }
+  html += `</section>`;
+
+  const war = data.wartungen || [];
+  if (war.length) {
+    html += `<section><div class="sec-head"><h2>Geplante Wartungen</h2><span class="count">${war.length}</span></div>`;
+    war.forEach(w => {
+      html += `<div class="maint">
+        <div class="incident-top">
+          <div class="incident-title-row"><span class="incident-title">${esc(w.titel)}</span>
+          <span class="sev sev-geplant">Geplant</span></div>
+          <div class="incident-meta">${esc(w.id)} · betrifft: ${(w.betroffeneKomponenten||[]).map(esc).join(", ")}</div>
+        </div>
+        <div class="maint-body">
+          <div class="maint-window">${fmtDateTime(w.geplantBeginn)} — ${fmtDateTime(w.geplantEnde)}</div>
+          <div class="maint-desc">${esc(w.beschreibung)}</div>
+        </div>
+      </div>`;
+    });
+    html += `</section>`;
+  }
+
+  // Komponenten-Sektion nur in der internen Ansicht. Öffentlich wird die Lage über
+  // Banner-Gesamtstatus und aktive Störungen kommuniziert – keine Komponentenliste.
+  if (intern) {
+    const groups = data.komponentengruppen || [];
+    html += `<section><div class="sec-head"><h2>Komponenten</h2></div>`;
+    groups.forEach(g => {
+      html += `<div class="group"><div class="group-title">${esc(g.name)}</div>`;
+      (g.komponenten||[]).forEach(c => {
+        html += `<div class="comp s-${esc(c.status)}">
+          <span class="comp-dot"></span>
+          <div class="comp-body">
+            <div class="comp-name">${esc(c.name)}</div>
+            ${c.beschreibung ? `<div class="comp-desc">${esc(c.beschreibung)}</div>` : ""}
+          </div>
+          ${c.oeffentlich === false ? `<span class="intern-only">nur intern</span>` : ""}
+          <span class="comp-status badge-${esc(c.status)}">${esc(STATUS_LABEL[c.status] || c.status)}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</section>`;
+  }
+
+  // Letzte Ereignisse: behobene Vorfälle (dauerhaft) + historie-Einträge.
+  const behobene = allInc.filter(i => i.status === "behoben");
+  const ereignisse = [];
+  behobene.forEach(i => ereignisse.push({
+    datum: i.behobenAm || i.beginn,
+    titel: i.titel,
+    dauer: dauerText(i.beginn, i.behobenAm),
+    status: "behoben",
+    internOnly: intern && i.oeffentlich === false
+  }));
+  (data.historie || []).forEach(h => ereignisse.push({
+    datum: h.datum, titel: h.titel, dauer: h.dauer, status: h.status, internOnly: false
+  }));
+  ereignisse.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+  if (intern && ereignisse.length) {
+    html += `<section><div class="sec-head"><h2>Letzte Ereignisse</h2><span class="count">${ereignisse.length}</span></div><div class="hist-wrap">`;
+    ereignisse.forEach(e => {
+      html += `<div class="hist-row">
+        <span class="hist-date">${fmtDate(e.datum)}</span>
+        <span class="hist-title">${esc(e.titel)}${e.internOnly ? `<span class="intern-only hist-intern-only">nur intern</span>` : ""}</span>
+        <span class="hist-dur">${esc(e.dauer)}</span>
+        <span class="hist-status">${esc(e.status)}</span>
+      </div>`;
+    });
+    html += `</div></section>`;
+  }
+
+  document.getElementById("app").innerHTML = html;
+}
+
+/* ---------- Ansicht: public / intern / demo ---------- */
+const ANSICHTEN = ["public", "intern", "demo"];
+function getAnsicht() {
+  const p = new URLSearchParams(location.search).get("ansicht");
+  if (ANSICHTEN.includes(p)) return p;
+  const a = document.documentElement.getAttribute("data-ansicht");
+  if (ANSICHTEN.includes(a)) return a;
+  return "public";
+}
+
+/* Öffentliche Projektion: nicht-öffentliche Einträge entfernen und interne,
+   personenbezogene Felder (nis2, interneNotiz, aufbewahrenBis, verantwortlich,
+   bearbeiter) strippen. Defense-in-depth – greift auch dann,
+   wenn die geladene Datei bereits gefiltert ist. */
+function filterPublic(data) {
+  const d = JSON.parse(JSON.stringify(data || {}));
+  d.komponentengruppen = (d.komponentengruppen || [])
+    .map(g => ({ ...g, komponenten: (g.komponenten || []).filter(c => c.oeffentlich !== false) }))
+    .filter(g => (g.komponenten || []).length);
+  d.incidents = (d.incidents || [])
+    .filter(i => i.oeffentlich !== false)
+    .map(i => {
+      const c = { ...i };
+      delete c.nis2; delete c.interneNotiz; delete c.aufbewahrenBis; delete c.verantwortlich;
+      c.updates = (c.updates || []).map(u => { const x = { ...u }; delete x.bearbeiter; return x; });
+      return c;
+    });
+  return d;
+}
+
+let RAW = null;
+let demoModus = "public";
+
+function darstellen(view, raw, modus) {
+  let intern, data;
+  if (view === "intern") { intern = true; data = raw; }
+  else if (view === "demo") { intern = (modus === "intern"); data = intern ? raw : filterPublic(raw); }
+  else { intern = false; data = filterPublic(raw); }
+  render(data, { intern });
+  renderDemoBar(view);
+}
+
+function renderDemoBar(view) {
+  const bar = document.getElementById("viewBar");
+  if (view !== "demo") { bar.innerHTML = ""; return; }
+  bar.innerHTML = `<div class="demo-bar">
+    <span class="demo-bar-text">Demo-Umgebung · Beispieldaten · werden nachts zurückgesetzt</span>
+    <div class="demo-toggle">
+      <button data-modus="public" class="${demoModus === "public" ? "active" : ""}">Öffentliche Ansicht</button>
+      <button data-modus="intern" class="${demoModus === "intern" ? "active" : ""}">Interne Ansicht</button>
+    </div>
+  </div>`;
+  bar.querySelectorAll("button").forEach(b => b.onclick = () => {
+    demoModus = b.dataset.modus;
+    darstellen("demo", RAW, demoModus);
+  });
+}
+
+/* Demo-Reset pro Browser: einmal täglich. Rein clientseitig, gilt pro Browser
+   – bewusst so, kein Worker nötig. Die Anzeige speist sich aus der JSON-Datei;
+   zurückgesetzt wird der demo-spezifische lokale Zustand (Ansichts-Modus). */
+const DEMO_RESET_KEY = "isec-status-demo-reset";
+function demoResetCheck() {
+  const heute = new Date().toISOString().slice(0, 10);
+  let last = null;
+  try { last = localStorage.getItem(DEMO_RESET_KEY); } catch {}
+  if (last !== heute) {
+    demoModus = "public";
+    try { localStorage.setItem(DEMO_RESET_KEY, heute); } catch {}
+  }
+}
+
+async function fetchJson(url) {
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error("HTTP " + r.status + " · " + url);
+  return r.json();
+}
+
+/* Interne Ansicht ist autark: sie liest die interne Datei UND eine lokale Kopie
+   der öffentlichen Daten (status-public-local.json, gleiches Verzeichnis) und
+   führt die Vorfälle über die ID zusammen – die interne Fassung hat Vorrang. So
+   bleibt ein öffentlicher Vorfall sichtbar, auch wenn seine personenbezogene
+   interne Fassung bereits gelöscht wurde. Die öffentliche Datei wird NIE übers
+   Internet von Cloudflare nachgeladen. */
+function mergeIntern(internData, publicLocal) {
+  const byId = new Map();
+  ((publicLocal && publicLocal.incidents) || []).forEach(i => byId.set(i.id, i));
+  (internData.incidents || []).forEach(i => byId.set(i.id, i));
+  return { ...internData, incidents: [...byId.values()] };
+}
+
+(async () => {
+  const ANSICHT = getAnsicht();
+  if (ANSICHT === "demo") demoResetCheck();
+  try {
+    if (ANSICHT === "public") {
+      RAW = await fetchJson("status.json");
+    } else {
+      const intern = await fetchJson("status-intern.json");
+      let publicLocal = null;
+      try { publicLocal = await fetchJson("status-public-local.json"); } catch (e) { publicLocal = null; }
+      RAW = mergeIntern(intern, publicLocal);
+    }
+    darstellen(ANSICHT, RAW, demoModus);
+  } catch (err) {
+    document.getElementById("app").innerHTML =
+      `<div class="empty">Statusdaten konnten nicht geladen werden. Bitte später erneut versuchen.<br><span style="font-family:var(--mono);font-size:0.78rem">${esc(err.message)}</span></div>`;
+    document.getElementById("orgSub").textContent = "Daten nicht verfügbar";
+  }
+})();
+
+setInterval(() => {
+  document.querySelectorAll(".nis2-count[data-frist]").forEach(el => {
+    const s = fristStatus(el.dataset.frist);
+    el.textContent = s.rest;
+    el.className = "nis2-count " + s.cls;
+    const item = el.closest(".nis2-item");
+    const flag = item.querySelector(".nis2-flag");
+    if (flag) { flag.textContent = s.flag; flag.className = "nis2-flag " + s.cls; }
+    item.classList.toggle("is-over", s.cls === "over");
+  });
+}, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / Tooling (derzeit kein Build, aber vorsorglich ignoriert)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Build / temporär
+dist/
+.tmp/
+*.log
+
+# Cloudflare / wrangler - lokaler State (enthaelt Account-ID und E-Mail)
+.wrangler/

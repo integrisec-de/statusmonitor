@@ -1,0 +1,16 @@
+# Build-Ausgabe des Paketier-Skripts (wird generiert, nicht versioniert)
+build/
+dist/
+*.zip
+
+# Caddy-Binary nicht ins Repo (kommt erst ins Kunden-Paket).
+# Fuehrender Slash: nur direkt in deploy/, sonst wuerde das Muster auch
+# lizenzen/caddy/ erfassen und die Apache-2.0-LICENSE aus dem Repo halten.
+/caddy
+/caddy.exe
+
+# Echtes DNS-Token niemals committen (nur dns.env.example liegt im Repo)
+dns.env
+
+# Laufzeit-Logs
+caddy-zugriff.log

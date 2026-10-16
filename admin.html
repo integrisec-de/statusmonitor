@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Statusmonitor – Verwaltung</title>
+<style>
+/* Outfit lokal gehostet – DSGVO-konform, identisch zur Status-Seite.
+   Fällt auf Systemschrift zurück, falls die Font-Dateien fehlen. */
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:400; font-display:swap; src:url('/assets/fonts/outfit-400.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:500; font-display:swap; src:url('/assets/fonts/outfit-500.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:600; font-display:swap; src:url('/assets/fonts/outfit-600.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:700; font-display:swap; src:url('/assets/fonts/outfit-700.woff2') format('woff2'); }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:800; font-display:swap; src:url('/assets/fonts/outfit-800.woff2') format('woff2'); }
+
+:root {
+  --font: 'Outfit', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  --radius: 12px;
+}
+
+/* ---------- LIGHT THEME (integrisec CI – Standard) ---------- */
+html[data-theme="light"] {
+  --bg:        #f4f7fb;
+  --panel:     #ffffff;
+  --panel-2:   #f4f7fb;
+  --border:    #dde4f0;
+  --border-soft:#e8eef7;
+  --navy:      #0e1e3d;
+  --text:      #18243a;
+  --muted:     #5e738a;
+  --faint:     #94a3b8;
+  --accent:    #1a4fd6;
+  --accent-lt: #e8effc;
+  --ok:        #00c896;
+  --ok-text:   #007a5e;
+  --ok-lt:     #e0faf3;
+  --warn:      #b45309;
+  --warn-lt:   #fef3c7;
+  --maint:     #1a4fd6;
+  --maint-lt:  #e8effc;
+  --crit:      #dc2626;
+  --crit-text: #dc2626;
+  --crit-lt:   #fef2f2;
+  --sh:        0 2px 8px rgba(14,30,61,0.07), 0 12px 32px rgba(14,30,61,0.06);
+}
+
+/* ---------- DARK THEME (Leitstellen-Look) ---------- */
+html[data-theme="dark"] {
+  --bg:        #1a2030;
+  --panel:     #232b3d;
+  --panel-2:   #2a3349;
+  --border:    #3a445c;
+  --border-soft:#313a4e;
+  --navy:      #eef2f8;
+  --text:      #eef2f8;
+  --muted:     #a6b1c4;
+  --faint:     #7d899e;
+  --accent:    #4d9bff;
+  --accent-lt: rgba(77,155,255,.14);
+  --ok:        #3fb950;
+  --ok-text:   #56d364;
+  --ok-lt:     rgba(63,185,80,.14);
+  --warn:      #d29922;
+  --warn-lt:   rgba(210,153,34,.14);
+  --maint:     #a371f7;
+  --maint-lt:  rgba(137,87,229,.16);
+  --crit:      #f85149;
+  --crit-text: #ff8a84;
+  --crit-lt:   rgba(248,81,73,.13);
+  --sh:        0 2px 8px rgba(0,0,0,.25), 0 12px 32px rgba(0,0,0,.3);
+}
+
+html.theme-swap, html.theme-swap * { transition: none !important; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; transition: background .2s, color .2s; }
+.wrap { max-width: 940px; margin: 0 auto; padding: 0 20px; }
+
+header { border-bottom: 1px solid var(--border); background: var(--panel); position: sticky; top: 0; z-index: 50; box-shadow: var(--sh); }
+.header-inner { display: flex; align-items: center; gap: 14px; padding: 14px 0; }
+.logo { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 14px; letter-spacing: .3px; color: #fff; background: var(--accent); }
+.htitle { font-size: 1.05rem; font-weight: 800; color: var(--navy); letter-spacing: -.3px; }
+.hsub { font-size: 0.82rem; color: var(--muted); }
+.header-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+button { font-family: var(--font); font-size: 0.84rem; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+button:hover { border-color: var(--accent); color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary:hover { background: #1746bd; color: #fff; }
+button.danger { color: var(--crit-text); }
+button.danger:hover { border-color: var(--crit); background: var(--crit-lt); color: var(--crit-text); }
+button.small { padding: 5px 10px; font-size: 0.78rem; }
+button.ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+button.ghost:hover { color: var(--accent); border-color: var(--accent); }
+.icon-btn { width: 38px; height: 38px; padding: 0; border-radius: 9px; border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); cursor: pointer; display: grid; place-items: center; font-size: 0.78rem; font-weight: 700; }
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: 22px 0 24px; flex-wrap: wrap; }
+.tab { padding: 9px 16px; font-size: 0.86rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.panel { display: none; } .panel.active { display: block; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; box-shadow: var(--sh); }
+.card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.card-head h3 { font-size: 0.95rem; font-weight: 700; color: var(--navy); }
+.card-head .id { font-family: var(--mono); font-size: 0.72rem; color: var(--faint); }
+.card-head .spacer { flex: 1; }
+
+label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+input, select, textarea { width: 100%; font-family: var(--font); font-size: 0.86rem; padding: 8px 10px; background: var(--panel); border: 1px solid var(--border); border-radius: 7px; color: var(--text); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
+.field { margin-bottom: 12px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+select option { background: var(--panel); color: var(--text); }
+input[type="datetime-local"], input[type="date"] { color-scheme: light dark; }
+.chk { display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text); font-weight: 500; cursor: pointer; margin: 0; }
+.chk input[type=checkbox] { width: auto; margin: 0; cursor: pointer; }
+
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: 0 0 9px; }
+.dot-betrieb { background: var(--ok); } .dot-eingeschraenkt { background: var(--warn); }
+.dot-stoerung { background: var(--crit); } .dot-wartung { background: var(--maint); }
+
+.group-block { border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; background: var(--panel-2); }
+.group-name-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.group-name-row input { font-weight: 700; }
+.comp-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; padding: 10px; background: var(--panel); border: 1px solid var(--border-soft); border-radius: 8px; }
+.comp-row .grow { flex: 1; }
+.comp-row select { width: 150px; flex: 0 0 150px; }
+.comp-chk { margin-top: 8px; }
+
+.update-edit { border-left: 2px solid var(--border); padding: 8px 0 8px 12px; margin-bottom: 8px; }
+
+.nis2-toggle { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--accent-lt); border: 1px solid var(--accent); border-radius: 7px; margin: 12px 0; font-size: 0.84rem; }
+.nis2-toggle input[type=checkbox] { width: auto; }
+.nis2-info { font-size: 0.72rem; color: var(--faint); margin-top: 6px; line-height: 1.5; }
+.aufb-info { font-size: 0.76rem; color: var(--muted); margin: 10px 0; padding: 8px 12px; background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 7px; }
+.aufb-info b { color: var(--text); font-family: var(--mono); }
+.oeff-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 7px; margin: 12px 0; }
+
+.empty { color: var(--faint); font-size: 0.84rem; padding: 20px; text-align: center; border: 1px dashed var(--border); border-radius: var(--radius); }
+.add-btn { width: 100%; padding: 10px; border: 1px dashed var(--border); background: transparent; color: var(--muted); margin-top: 4px; }
+.add-btn:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
+.panel-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.lc-badge { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 5px; }
+.lc-aktiv { color: var(--crit-text); background: var(--crit-lt); border: 1px solid var(--crit); }
+.lc-behoben { color: var(--ok-text); background: var(--ok-lt); border: 1px solid var(--ok); }
+.export-hint { font-size: 0.76rem; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; line-height: 1.55; }
+.export-hint b { color: var(--text); }
+
+.toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ok); color: #fff; padding: 11px 20px; border-radius: 9px; font-size: 0.84rem; font-weight: 600; opacity: 0; transition: all .3s; z-index: 200; box-shadow: var(--sh); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.err { background: var(--crit); }
+
+.help { font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+.hint { font-size: 0.72rem; color: var(--faint); margin-top: 4px; }
+.dsgvo-hint { font-size: 0.74rem; color: var(--faint); margin: 8px 0 4px; font-style: italic; }
+.gesamt-row { display: flex; align-items: center; gap: 10px; }
+.gesamt-row select { width: auto; flex: 1; }
+
+/* ---- Modal (Aufbewahrung / Löschprüfung) ---- */
+.modal { position: fixed; inset: 0; background: rgba(14,30,61,.45); display: none; align-items: center; justify-content: center; z-index: 300; padding: 20px; }
+.modal.open { display: flex; }
+.modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--sh); max-width: 520px; width: 100%; padding: 22px; max-height: 86vh; overflow-y: auto; }
+.modal-box h3 { font-size: 1.05rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+.modal-list { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 18px; }
+.modal-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--panel-2); font-size: 0.84rem; color: var(--text); font-weight: 500; cursor: pointer; }
+.modal-item input { width: auto; margin-top: 3px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap header-inner">
+    <div class="logo" id="logo">ST</div>
+    <div>
+      <div class="htitle">Statusmonitor — Verwaltung</div>
+      <div class="hsub" id="orgLabel">keine Daten geladen</div>
+    </div>
+    <div class="header-actions">
+      <input type="file" id="fileInput" accept=".json" style="display:none">
+      <button class="ghost" onclick="document.getElementById('fileInput').click()">JSON laden</button>
+      <button class="ghost" onclick="loadDemo()">Demo laden</button>
+      <button class="icon-btn" id="themeToggle" title="Hell/Dunkel umschalten">Dunkel</button>
+      <button class="ghost" onclick="exportPublic()">Öffentliche Datei (status.json)</button>
+      <button class="primary" onclick="exportIntern()">Interne Datei (status-intern.json)</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="export-hint">„Interne Datei (status-intern.json)" bleibt im internen Netz. „Öffentliche Datei" erzeugt <b>status.json</b> (für Cloudflare / öffentlich) und eine identische <b>status-public-local.json</b> — letztere gehört auf die interne VM neben die status-intern.json, damit die interne Ansicht auch ohne Internet vollständig bleibt.</div>
+  <div class="tabs">
+    <div class="tab active" data-tab="allgemein">Allgemein</div>
+    <div class="tab" data-tab="komponenten">Komponenten</div>
+    <div class="tab" data-tab="incidents">Störungen</div>
+    <div class="tab" data-tab="wartungen">Wartungen</div>
+    <div class="tab" data-tab="historie">Historie</div>
+  </div>
+
+  <div class="panel active" id="panel-allgemein"></div>
+  <div class="panel" id="panel-komponenten"></div>
+  <div class="panel" id="panel-incidents"></div>
+  <div class="panel" id="panel-wartungen"></div>
+  <div class="panel" id="panel-historie"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"></div>
+
+<script>
+/* ---------- Theme ---------- */
+const THEME_KEY = "isec-status-theme";
+(function initTheme(){ let t = "light"; try { t = localStorage.getItem(THEME_KEY) || "light"; } catch {} document.documentElement.setAttribute("data-theme", t); })();
+function currentTheme(){ return document.documentElement.getAttribute("data-theme") || "light"; }
+function applyTheme(t){
+  document.documentElement.classList.add("theme-swap");
+  document.documentElement.setAttribute("data-theme", t);
+  try { localStorage.setItem(THEME_KEY, t); } catch {}
+  syncThemeBtn();
+  requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove("theme-swap")));
+}
+function syncThemeBtn(){ const b = document.getElementById("themeToggle"); if (b) b.textContent = currentTheme() === "light" ? "Dunkel" : "Hell"; }
+
+/* ---------- State ---------- */
+let D = emptyData();
+
+function emptyData() {
+  return {
+    organisation: { name: "", untertitel: "Systemstatus & Störungsinformationen", logoText: "ST", kontaktEmail: "", stand: new Date().toISOString() },
+    gesamtstatus: "betrieb",
+    einstellungen: { aufbewahrungErheblichTage: 1095, aufbewahrungStandardTage: 365 },
+    komponentengruppen: [],
+    incidents: [],
+    wartungen: [],
+    historie: []
+  };
+}
+const PHASE_WERTE = ["erkannt","untersuchung","identifiziert","beobachtung","behoben"];
+
+const STATI = [["betrieb","Betrieb"],["eingeschraenkt","Eingeschränkt"],["stoerung","Störung"],["wartung","Wartung"]];
+const GESAMT = [["betrieb","Alle Systeme normal"],["eingeschraenkt","Eingeschränkter Betrieb"],["wartung","Wartung aktiv"],["stoerung","Aktive Störung"]];
+const PHASEN = [["erkannt","Erkannt"],["untersuchung","Wird untersucht"],["identifiziert","Ursache identifiziert"],["beobachtung","Wird beobachtet"],["behoben","Behoben"]];
+
+function uid(prefix) {
+  const y = new Date().getFullYear();
+  const n = Math.floor(Math.random()*9000+1000);
+  return `${prefix}-${y}-${n}`;
+}
+function esc(s){const d=document.createElement("div");d.textContent=s??"";return d.innerHTML;}
+function toLocalInput(iso){ if(!iso) return ""; const d=new Date(iso); const off=d.getTimezoneOffset(); const l=new Date(d.getTime()-off*60000); return l.toISOString().slice(0,16); }
+function fromLocalInput(v){ return v ? new Date(v).toISOString() : ""; }
+function todayStr(){ const d=new Date(); const off=d.getTimezoneOffset(); return new Date(d.getTime()-off*60000).toISOString().slice(0,10); }
+function fmtDate(iso){ try { return new Date(iso).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}); } catch { return iso || "–"; } }
+function phaseLabel(p){ const f = PHASEN.find(x => x[0] === p); return f ? f[1] : (p || ""); }
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  document.getElementById("panel-"+t.dataset.tab).classList.add("active");
+});
+
+/* ---------- Render ---------- */
+function renderAll(){
+  document.getElementById("orgLabel").textContent = D.organisation.name || "ohne Name";
+  renderAllgemein(); renderKomponenten(); renderIncidents(); renderWartungen(); renderHistorie();
+}
+
+function renderAllgemein(){
+  const o = D.organisation;
+  const e = D.einstellungen;
+  document.getElementById("panel-allgemein").innerHTML = `
+    <div class="card">
+      <div class="card-head"><h3>Organisation</h3></div>
+      <div class="row">
+        <div class="field"><label>Name der Organisation</label><input id="o-name" value="${esc(o.name)}" placeholder="z. B. Stadtwerke Musterstadt"></div>
+        <div class="field"><label>Logo-Kürzel (max. 3 Zeichen)</label><input id="o-logo" value="${esc(o.logoText)}" maxlength="3" placeholder="SWM"></div>
+      </div>
+      <div class="field"><label>Untertitel</label><input id="o-sub" value="${esc(o.untertitel)}"></div>
+      <div class="field"><label>Kontakt-E-Mail (bei Störungen)</label><input id="o-mail" value="${esc(o.kontaktEmail)}" placeholder="stoerung@..."></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Gesamtstatus</h3></div>
+      <div class="help">Der Gesamtstatus erscheint als Banner oben auf der öffentlichen Seite. Setzen Sie ihn passend zur aktuellen Lage.</div>
+      <div class="gesamt-row">
+        <span class="dot dot-${esc(D.gesamtstatus)}"></span>
+        <select id="o-gesamt">${GESAMT.map(g=>`<option value="${g[0]}" ${D.gesamtstatus===g[0]?"selected":""}>${g[1]}</option>`).join("")}</select>
+      </div>
+      <div class="hint">Der Zeitstempel „Stand" wird beim Export automatisch auf jetzt gesetzt.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Aufbewahrung &amp; Löschfristen</h3></div>
+      <div class="help">Gilt nur für die <b>internen</b>, personenbezogenen Daten (status-intern.json). Frist ab Beginn eines Vorfalls; daraus wird je Vorfall „aufbewahren bis" berechnet. Die öffentliche status.json ist ein dauerhaftes Archiv und wird nie zeitbasiert geleert. Das Löschen abgelaufener interner Vorfälle erfolgt im Tab „Störungen" — stets nach Bestätigung.</div>
+      <div class="row">
+        <div class="field"><label>Erhebliche Vorfälle (Tage)</label><input id="o-aufb-erh" type="number" min="0" value="${esc(e.aufbewahrungErheblichTage)}"></div>
+        <div class="field"><label>Standard-Vorfälle (Tage)</label><input id="o-aufb-std" type="number" min="0" value="${esc(e.aufbewahrungStandardTage)}"></div>
+      </div>
+      <div class="hint">Standardwerte: 1095 Tage (≈ 3 Jahre) für erhebliche, 365 Tage (1 Jahr) für sonstige Vorfälle.</div>
+    </div>`;
+  bind("o-name", v=>D.organisation.name=v, true);
+  bind("o-logo", v=>D.organisation.logoText=v);
+  bind("o-sub", v=>D.organisation.untertitel=v);
+  bind("o-mail", v=>D.organisation.kontaktEmail=v);
+  document.getElementById("o-gesamt").onchange = e2 => { D.gesamtstatus=e2.target.value; renderAllgemein(); };
+  const ae=document.getElementById("o-aufb-erh"); if(ae) ae.oninput = e2 => { D.einstellungen.aufbewahrungErheblichTage = parseInt(e2.target.value,10) || 0; };
+  const as=document.getElementById("o-aufb-std"); if(as) as.oninput = e2 => { D.einstellungen.aufbewahrungStandardTage = parseInt(e2.target.value,10) || 0; };
+}
+
+function bind(id, fn, relabel){ const el=document.getElementById(id); if(el) el.oninput = e => { fn(e.target.value); if(relabel) document.getElementById("orgLabel").textContent = D.organisation.name || "ohne Name"; }; }
+
+function renderKomponenten(){
+  let h = `<div class="help">Gruppen bündeln zusammengehörige Dienste (z. B. „Netzbetrieb"). Jede Komponente hat einen eigenen Status. Mit „öffentlich sichtbar" steuern Sie, ob eine Komponente in der öffentlichen Datei erscheint.</div>`;
+  if(!D.komponentengruppen.length){ h += `<div class="empty">Noch keine Komponentengruppen.</div>`; }
+  D.komponentengruppen.forEach((g,gi)=>{
+    h += `<div class="group-block">
+      <div class="group-name-row">
+        <input value="${esc(g.name)}" oninput="D.komponentengruppen[${gi}].name=this.value" placeholder="Gruppenname">
+        <button class="small danger" onclick="delGroup(${gi})">Gruppe löschen</button>
+      </div>`;
+    (g.komponenten||[]).forEach((c,ci)=>{
+      h += `<div class="comp-row">
+        <div class="grow">
+          <input value="${esc(c.name)}" oninput="D.komponentengruppen[${gi}].komponenten[${ci}].name=this.value" placeholder="Komponentenname" style="margin-bottom:6px">
+          <input value="${esc(c.beschreibung||"")}" oninput="D.komponentengruppen[${gi}].komponenten[${ci}].beschreibung=this.value" placeholder="Beschreibung (optional)">
+          <label class="chk comp-chk"><input type="checkbox" ${c.oeffentlich!==false?"checked":""} onchange="D.komponentengruppen[${gi}].komponenten[${ci}].oeffentlich=this.checked"> öffentlich sichtbar</label>
+        </div>
+        <select onchange="D.komponentengruppen[${gi}].komponenten[${ci}].status=this.value;renderKomponenten()">
+          ${STATI.map(s=>`<option value="${s[0]}" ${c.status===s[0]?"selected":""}>${s[1]}</option>`).join("")}
+        </select>
+        <button class="small ghost" onclick="delComp(${gi},${ci})">×</button>
+      </div>`;
+    });
+    h += `<button class="add-btn small" onclick="addComp(${gi})">+ Komponente</button></div>`;
+  });
+  h += `<button class="add-btn" onclick="addGroup()">+ Gruppe hinzufügen</button>`;
+  document.getElementById("panel-komponenten").innerHTML = h;
+}
+function addGroup(){ D.komponentengruppen.push({name:"Neue Gruppe",komponenten:[]}); renderKomponenten(); }
+function delGroup(i){ D.komponentengruppen.splice(i,1); renderKomponenten(); }
+function addComp(gi){ D.komponentengruppen[gi].komponenten.push({name:"",status:"betrieb",beschreibung:"",oeffentlich:true}); renderKomponenten(); }
+function delComp(gi,ci){ D.komponentengruppen[gi].komponenten.splice(ci,1); renderKomponenten(); }
+
+function renderIncidents(){
+  let h = `<div class="panel-actions">
+      <button class="ghost small" onclick="exportCsvIntern()">Internes Logbuch (CSV)</button>
+      <button class="ghost small" onclick="exportCsvPublic()">Öffentliches Logbuch (CSV)</button>
+      <button class="ghost small" onclick="pruefeAbgelaufene()">Abgelaufene interne Vorfälle prüfen</button>
+    </div>
+    <div class="help">Eine aktive Störung erscheint sofort auf der Seite. „Als behoben markieren" verschiebt sie in „Letzte Ereignisse" (öffentlich dauerhaft archiviert, kein automatisches Löschen). „Öffentlich sichtbar" steuert die öffentliche Datei; interne Notiz, Verantwortlich/Bearbeiter und der NIS-2-Block bleiben stets intern. Die Aufbewahrungsfrist/Löschung betrifft ausschließlich die internen, personenbezogenen Daten.</div>`;
+  if(!D.incidents.length){ h += `<div class="empty">Keine Störungen erfasst.</div>`; }
+  D.incidents.forEach((inc,ii)=>{
+    const behoben = inc.status==='behoben';
+    h += `<div class="card">
+      <div class="card-head"><span class="dot dot-${behoben?'betrieb':'stoerung'}"></span><h3>${esc(inc.titel||"Neue Störung")}</h3><span class="id">${esc(inc.id)}</span><span class="lc-badge lc-${behoben?'behoben':'aktiv'}">${behoben?'behoben':'aktiv'}</span><span class="spacer"></span><button class="small ghost" onclick="toggleBehoben(${ii})">${behoben?'Wieder als aktiv':'Als behoben markieren'}</button><button class="small danger" onclick="delIncident(${ii})">Löschen</button></div>
+      <div class="field"><label>Titel</label><input value="${esc(inc.titel)}" oninput="D.incidents[${ii}].titel=this.value"></div>
+      <div class="row-3">
+        <div class="field"><label>Beginn</label><input type="datetime-local" value="${toLocalInput(inc.beginn)}" onchange="setIncBeginn(${ii},this.value)"></div>
+        <div class="field"><label>Schweregrad</label><select onchange="D.incidents[${ii}].schweregrad=this.value;recalcNis2(${ii});recalcAufbewahrung(D.incidents[${ii}]);renderIncidents()"><option value="gering" ${inc.schweregrad!=='erheblich'?'selected':''}>Geringfügig</option><option value="erheblich" ${inc.schweregrad==='erheblich'?'selected':''}>Erheblich</option></select></div>
+        <div class="field"><label>Aktuelle Phase</label><select onchange="D.incidents[${ii}].phase=this.value">${PHASEN.map(p=>`<option value="${p[0]}" ${inc.phase===p[0]?'selected':''}>${p[1]}</option>`).join("")}</select></div>
+      </div>
+      ${behoben?`<div class="field"><label>Behoben am</label><input type="datetime-local" value="${toLocalInput(inc.behobenAm)}" onchange="D.incidents[${ii}].behobenAm=fromLocalInput(this.value)||null"></div>`:''}
+      <div class="field"><label>Betroffene Komponenten (kommagetrennt)</label><input value="${esc((inc.betroffeneKomponenten||[]).join(', '))}" oninput="D.incidents[${ii}].betroffeneKomponenten=this.value.split(',').map(s=>s.trim()).filter(Boolean)"></div>
+      <div class="field"><label>Verantwortlich (nur intern)</label><input value="${esc(inc.verantwortlich||'')}" oninput="D.incidents[${ii}].verantwortlich=this.value" placeholder="z. B. M. Beispiel, IT-Leitung"></div>
+      <div class="oeff-row">
+        <input type="checkbox" id="oeff-${ii}" ${inc.oeffentlich!==false?'checked':''} onchange="D.incidents[${ii}].oeffentlich=this.checked">
+        <label for="oeff-${ii}" style="margin:0">Öffentlich sichtbar (erscheint in der öffentlichen Datei)</label>
+      </div>
+      <div class="nis2-toggle">
+        <input type="checkbox" id="nis2-${ii}" ${inc.nis2&&inc.nis2.erheblicherVorfall?'checked':''} onchange="toggleNis2(${ii},this.checked)">
+        <label for="nis2-${ii}" style="margin:0">Erheblicher Sicherheitsvorfall i. S. d. NIS-2 / § 32 BSIG</label>
+      </div>`;
+    if(inc.nis2&&inc.nis2.erheblicherVorfall){
+      h += `<div class="nis2-info">Fristen ab Beginn automatisch berechnet: Erstmeldung +24 h · Folgemeldung +72 h · Abschluss +1 Monat. Werden in der internen Datei gespeichert und in der internen Ansicht angezeigt.</div>`;
+    }
+    const aufbInfo = inc.aufbewahrenBis
+      ? `Aufbewahren bis (intern): <b>${fmtDate(inc.aufbewahrenBis)}</b> (${inc.schweregrad==='erheblich'?'erhebliche':'Standard'}-Frist)`
+      : (hasPersonal(inc) ? `Aufbewahren bis (intern): <b>— wird beim Export berechnet</b>` : `Aufbewahren bis: <b>—</b> (keine personenbezogenen Daten, kein Personenbezug)`);
+    h += `<div class="aufb-info">${aufbInfo}</div>
+      <div class="field"><label>Interne Notiz (nur intern sichtbar)</label><textarea oninput="D.incidents[${ii}].interneNotiz=this.value" placeholder="Interner Vermerk – wird nie in die öffentliche Datei exportiert.">${esc(inc.interneNotiz||"")}</textarea></div>
+      <div style="margin-top:16px"><label>Verlaufs-Updates</label>
+      <div class="dsgvo-hint">Bitte keine Klarnamen in öffentlich sichtbaren Meldungstexten — Datensparsamkeit nach Art. 25 DSGVO. „Bearbeiter" ist intern und wird nicht öffentlich exportiert.</div>`;
+    (inc.updates||[]).forEach((u,ui)=>{
+      h += `<div class="update-edit">
+        <div class="row-3" style="margin-bottom:6px">
+          <div><select onchange="D.incidents[${ii}].updates[${ui}].phase=this.value">${PHASEN.map(p=>`<option value="${p[0]}" ${u.phase===p[0]?'selected':''}>${p[1]}</option>`).join("")}</select></div>
+          <div style="grid-column:span 1"><input type="datetime-local" value="${toLocalInput(u.zeit)}" onchange="D.incidents[${ii}].updates[${ui}].zeit=fromLocalInput(this.value)"></div>
+          <div><button class="small ghost" onclick="delUpdate(${ii},${ui})">Update löschen</button></div>
+        </div>
+        <input value="${esc(u.bearbeiter||'')}" oninput="D.incidents[${ii}].updates[${ui}].bearbeiter=this.value" placeholder="Bearbeiter (nur intern, bewusst eintragen)" style="margin-bottom:6px">
+        <textarea oninput="D.incidents[${ii}].updates[${ui}].text=this.value" placeholder="Was ist passiert / was wird getan?">${esc(u.text)}</textarea>
+      </div>`;
+    });
+    h += `<button class="add-btn small" onclick="addUpdate(${ii})">+ Update</button></div></div>`;
+  });
+  h += `<button class="add-btn" onclick="addIncident()">+ Neue Störung</button>`;
+  document.getElementById("panel-incidents").innerHTML = h;
+}
+function addIncident(){ const inc={id:uid("INC"),titel:"",schweregrad:"gering",status:"aktiv",phase:"erkannt",oeffentlich:true,verantwortlich:"",betroffeneKomponenten:[],beginn:new Date().toISOString(),behobenAm:null,interneNotiz:"",updates:[{zeit:new Date().toISOString(),phase:"erkannt",bearbeiter:"",text:""}]}; recalcAufbewahrung(inc); D.incidents.unshift(inc); renderIncidents(); }
+function delIncident(i){ D.incidents.splice(i,1); renderIncidents(); }
+function setIncBeginn(ii,val){ D.incidents[ii].beginn=fromLocalInput(val); recalcNis2(ii); recalcAufbewahrung(D.incidents[ii]); renderIncidents(); }
+function toggleBehoben(ii){ const inc=D.incidents[ii]; if(inc.status==='behoben'){ inc.status='aktiv'; inc.behobenAm=null; } else { inc.status='behoben'; inc.behobenAm=new Date().toISOString(); inc.phase='behoben'; } renderIncidents(); }
+function addUpdate(ii){ D.incidents[ii].updates.unshift({zeit:new Date().toISOString(),phase:D.incidents[ii].phase||"untersuchung",bearbeiter:"",text:""}); renderIncidents(); }
+function delUpdate(ii,ui){ D.incidents[ii].updates.splice(ui,1); renderIncidents(); }
+function toggleNis2(ii,on){ if(on){ D.incidents[ii].nis2={erheblicherVorfall:true}; recalcNis2(ii);} else { delete D.incidents[ii].nis2; } renderIncidents(); }
+function recalcNis2(ii){
+  const inc=D.incidents[ii];
+  if(inc.schweregrad==='erheblich' && (!inc.nis2 || !inc.nis2.erheblicherVorfall)){ inc.nis2={erheblicherVorfall:true}; }
+  if(inc.nis2 && inc.nis2.erheblicherVorfall && inc.beginn){
+    const b=new Date(inc.beginn);
+    inc.nis2.erstmeldungFaellig=new Date(b.getTime()+24*3600e3).toISOString();
+    inc.nis2.folgemeldungFaellig=new Date(b.getTime()+72*3600e3).toISOString();
+    const m=new Date(b); m.setMonth(m.getMonth()+1); inc.nis2.abschlussFaellig=m.toISOString();
+  }
+}
+function hasPersonal(inc){ return !!(inc && (inc.interneNotiz || inc.verantwortlich || inc.nis2 || (inc.updates||[]).some(u=>u.bearbeiter))); }
+function recalcAufbewahrung(inc){
+  if(!inc) return;
+  // Die Aufbewahrungsfrist betrifft ausschließlich personenbezogene Daten.
+  if(!inc.beginn || !hasPersonal(inc)){ delete inc.aufbewahrenBis; return; }
+  const tage = inc.schweregrad==='erheblich' ? (D.einstellungen.aufbewahrungErheblichTage||1095) : (D.einstellungen.aufbewahrungStandardTage||365);
+  inc.aufbewahrenBis = new Date(new Date(inc.beginn).getTime() + tage*86400000).toISOString();
+}
+function recalcAllAufbewahrung(){ D.incidents.forEach(recalcAufbewahrung); }
+
+/* ---------- Aufbewahrungs-Prüfung (Editor-durchgesetzte Löschung) ---------- */
+function pruefeAbgelaufene(){
+  recalcAllAufbewahrung();
+  const heute = new Date(); heute.setHours(0,0,0,0);
+  const exp = D.incidents.filter(i => i.aufbewahrenBis && new Date(i.aufbewahrenBis) < heute);
+  if(!exp.length){ toast("Keine abgelaufenen internen Daten."); return; }
+  openModal(exp);
+}
+function openModal(list){
+  const m = document.getElementById("modal");
+  m.innerHTML = `<div class="modal-box">
+    <h3>Abgelaufene interne Daten</h3>
+    <p class="help">Die Aufbewahrungsfrist betrifft nur die internen, personenbezogenen Daten. Bei <b>öffentlichen</b> Vorfällen werden lediglich diese Daten entfernt (interne Notiz, Verantwortlich/Bearbeiter, NIS-2); der öffentliche Eintrag bleibt als Archiv erhalten. Rein <b>interne</b> Vorfälle werden vollständig gelöscht. Ausgeführt wird erst nach Ihrer Bestätigung.</p>
+    <div class="modal-list">${list.map((i,idx)=>`<label class="modal-item"><input type="checkbox" data-mid="${idx}" checked><span><b>${esc(i.titel||i.id)}</b> <span class="lc-badge ${i.oeffentlich===false?'lc-aktiv':'lc-behoben'}">${i.oeffentlich===false?'intern → löschen':'öffentlich → anonymisieren'}</span><br><span class="hint">${esc(i.id)} · aufbewahren bis ${fmtDate(i.aufbewahrenBis)}</span></span></label>`).join("")}</div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeModal()">Abbrechen</button>
+      <button class="danger" id="modalDel">Markierte Daten bereinigen</button>
+    </div>
+  </div>`;
+  m.classList.add("open");
+  document.getElementById("modalDel").onclick = () => {
+    const checked = [...m.querySelectorAll("input[data-mid]:checked")].map(c => list[+c.dataset.mid]);
+    if(!checked.length){ toast("Nichts ausgewählt.", true); return; }
+    if(!confirm(`${checked.length} Eintrag/Einträge bereinigen? Personenbezogene Daten werden entfernt, rein interne Vorfälle gelöscht. Dies kann nicht rückgängig gemacht werden.`)) return;
+    const loeschen = checked.filter(i => i.oeffentlich===false);
+    const anon = checked.filter(i => i.oeffentlich!==false);
+    anon.forEach(i => { i.interneNotiz=""; i.verantwortlich=""; delete i.nis2; delete i.aufbewahrenBis; (i.updates||[]).forEach(u=>{ u.bearbeiter=""; }); });
+    D.incidents = D.incidents.filter(i => loeschen.indexOf(i) === -1);
+    closeModal(); renderIncidents();
+    toast(`${anon.length} anonymisiert, ${loeschen.length} gelöscht`);
+  };
+}
+function closeModal(){ const m=document.getElementById("modal"); m.classList.remove("open"); m.innerHTML=""; }
+
+function renderWartungen(){
+  let h = `<div class="help">Geplante Wartungen werden vorab auf der Seite angekündigt.</div>`;
+  if(!D.wartungen.length){ h += `<div class="empty">Keine geplanten Wartungen.</div>`; }
+  D.wartungen.forEach((w,wi)=>{
+    h += `<div class="card">
+      <div class="card-head"><span class="dot dot-wartung"></span><h3>${esc(w.titel||"Neue Wartung")}</h3><span class="id">${esc(w.id)}</span><span class="spacer"></span><button class="small danger" onclick="delWartung(${wi})">Löschen</button></div>
+      <div class="field"><label>Titel</label><input value="${esc(w.titel)}" oninput="D.wartungen[${wi}].titel=this.value"></div>
+      <div class="row">
+        <div class="field"><label>Beginn</label><input type="datetime-local" value="${toLocalInput(w.geplantBeginn)}" onchange="D.wartungen[${wi}].geplantBeginn=fromLocalInput(this.value)"></div>
+        <div class="field"><label>Ende</label><input type="datetime-local" value="${toLocalInput(w.geplantEnde)}" onchange="D.wartungen[${wi}].geplantEnde=fromLocalInput(this.value)"></div>
+      </div>
+      <div class="field"><label>Betroffene Komponenten (kommagetrennt)</label><input value="${esc((w.betroffeneKomponenten||[]).join(', '))}" oninput="D.wartungen[${wi}].betroffeneKomponenten=this.value.split(',').map(s=>s.trim()).filter(Boolean)"></div>
+      <div class="field"><label>Beschreibung</label><textarea oninput="D.wartungen[${wi}].beschreibung=this.value">${esc(w.beschreibung)}</textarea></div>
+    </div>`;
+  });
+  h += `<button class="add-btn" onclick="addWartung()">+ Neue Wartung</button>`;
+  document.getElementById("panel-wartungen").innerHTML = h;
+}
+function addWartung(){ const n=new Date(); const e=new Date(n.getTime()+2*3600e3); D.wartungen.push({id:uid("WAR"),titel:"",betroffeneKomponenten:[],geplantBeginn:n.toISOString(),geplantEnde:e.toISOString(),beschreibung:""}); renderWartungen(); }
+function delWartung(i){ D.wartungen.splice(i,1); renderWartungen(); }
+
+function renderHistorie(){
+  let h = `<div class="help">Manuelle Chronik-Einträge. Als „behoben" markierte Störungen erscheinen automatisch unter „Letzte Ereignisse" und müssen hier nicht erfasst werden; diese Liste ist für ältere oder manuell gepflegte Einträge gedacht.</div>`;
+  if(!D.historie.length){ h += `<div class="empty">Keine Einträge.</div>`; }
+  D.historie.forEach((e,ei)=>{
+    h += `<div class="card" style="padding:14px">
+      <div class="row-3">
+        <div class="field" style="margin:0"><label>Titel</label><input value="${esc(e.titel)}" oninput="D.historie[${ei}].titel=this.value"></div>
+        <div class="field" style="margin:0"><label>Datum</label><input type="date" value="${esc(e.datum)}" oninput="D.historie[${ei}].datum=this.value"></div>
+        <div class="field" style="margin:0"><label>Dauer</label><input value="${esc(e.dauer)}" oninput="D.historie[${ei}].dauer=this.value" placeholder="z. B. 2 Stunden"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px;align-items:flex-end">
+        <div class="field" style="margin:0;flex:1"><label>Status</label><input value="${esc(e.status)}" oninput="D.historie[${ei}].status=this.value" placeholder="behoben / abgeschlossen"></div>
+        <button class="small danger" onclick="delHist(${ei})">Löschen</button>
+      </div>
+    </div>`;
+  });
+  h += `<button class="add-btn" onclick="addHist()">+ Eintrag</button>`;
+  document.getElementById("panel-historie").innerHTML = h;
+}
+function addHist(){ D.historie.unshift({id:uid("HIS"),titel:"",datum:todayStr(),dauer:"",status:"behoben"}); renderHistorie(); }
+function delHist(i){ D.historie.splice(i,1); renderHistorie(); }
+
+/* ---------- Load ---------- */
+document.getElementById("fileInput").onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try { D = normalize(JSON.parse(r.result)); renderAll(); toast("JSON geladen"); }
+    catch(err){ toast("Ungültige JSON-Datei: "+err.message, true); }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+};
+
+function normalize(d){
+  const base = emptyData();
+  const out = Object.assign(base, d, {
+    organisation: Object.assign(base.organisation, d.organisation||{}),
+    einstellungen: Object.assign(base.einstellungen, d.einstellungen||{})
+  });
+  (out.komponentengruppen||[]).forEach(g => (g.komponenten||[]).forEach(c => { if(c.oeffentlich===undefined) c.oeffentlich=true; }));
+  (out.incidents||[]).forEach(i => {
+    if(i.oeffentlich===undefined) i.oeffentlich=true;
+    if(i.interneNotiz===undefined) i.interneNotiz="";
+    if(i.verantwortlich===undefined) i.verantwortlich="";
+    // Lebenszyklus-Migration: früher trug "status" die Phase.
+    if(i.status==="aktiv" || i.status==="behoben"){
+      if(i.phase===undefined) i.phase=(i.updates&&i.updates[0]&&i.updates[0].phase) || (i.status==="behoben"?"behoben":"erkannt");
+    } else {
+      if(i.phase===undefined) i.phase = PHASE_WERTE.includes(i.status) ? i.status : "erkannt";
+      i.status="aktiv";
+    }
+    if(i.status==="behoben" && !i.behobenAm) i.behobenAm=(i.updates&&i.updates[0]&&i.updates[0].zeit) || i.beginn || null;
+    if(i.behobenAm===undefined) i.behobenAm=null;
+    (i.updates||[]).forEach(u => { if(u.bearbeiter===undefined) u.bearbeiter=""; });
+  });
+  return out;
+}
+
+/* ---------- Validierung ---------- */
+function probleme(){
+  const p = [];
+  if(!D.organisation.name) p.push("Organisationsname fehlt");
+  D.incidents.forEach((i,n)=>{ if(!i.titel) p.push(`Störung ${n+1}: Titel fehlt`); });
+  return p;
+}
+function download(blob, name){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+
+/* ---------- Zwei-Welten-Export ---------- */
+function exportIntern(){
+  const p = probleme(); if(p.length) toast(p[0], true);
+  recalcAllAufbewahrung();
+  D.incidents.forEach((_,i)=>recalcNis2(i));
+  D.organisation.stand = new Date().toISOString();
+  download(new Blob([JSON.stringify(D, null, 2)], {type:"application/json"}), "status-intern.json");
+  toast("status-intern.json exportiert");
+}
+
+function buildPublic(d){
+  const c = JSON.parse(JSON.stringify(d));
+  c.komponentengruppen = (c.komponentengruppen||[])
+    .map(g => ({...g, komponenten:(g.komponenten||[]).filter(k => k.oeffentlich!==false)}))
+    .filter(g => (g.komponenten||[]).length);
+  c.incidents = (c.incidents||[])
+    .filter(i => i.oeffentlich!==false)
+    .map(i => {
+      const x={...i};
+      delete x.nis2; delete x.interneNotiz; delete x.aufbewahrenBis; delete x.verantwortlich;
+      x.updates=(x.updates||[]).map(u=>{ const y={...u}; delete y.bearbeiter; return y; });
+      return x;
+    });
+  return c;
+}
+
+/* Archiv-Merge: vorhandene öffentliche Fassung (Archiv) + frischer Export,
+   zusammengeführt über die Incident-ID. Die frische Fassung gewinnt bei Konflikt
+   (aktueller Stand), nur im Archiv vorhandene Vorfälle bleiben erhalten
+   (Archiv-Garantie). Auf das Archiv wird erneut die Public-Projektion angewandt,
+   damit garantiert nichts Internes durchrutscht. */
+function mergeArchiv(freshPublic, archiv){
+  const archivPub = buildPublic(archiv);
+  const byId = new Map();
+  (archivPub.incidents||[]).forEach(i => { if(i && i.id) byId.set(i.id, i); });
+  const ohneId = [];
+  (freshPublic.incidents||[]).forEach(i => { if(i && i.id) byId.set(i.id, i); else if(i) ohneId.push(i); });
+  return { ...freshPublic, incidents: [...byId.values(), ...ohneId] };
+}
+
+async function exportPublic(){
+  const p = probleme(); if(p.length) toast(p[0], true);
+  recalcAllAufbewahrung();
+  D.incidents.forEach((_,i)=>recalcNis2(i));
+  let pub = buildPublic(D);
+
+  // Archiv-Garantie: vorhandene status-public-local.json einlesen und zusammenführen.
+  let archiv = null, archivVorhanden = false, archivFehler = false;
+  try {
+    const r = await fetch("status-public-local.json", { cache: "no-store" });
+    if (r.status === 404) { archivVorhanden = false; }
+    else if (!r.ok) { archivFehler = true; }
+    else { archivVorhanden = true; try { archiv = await r.json(); } catch(e){ archivFehler = true; archivVorhanden = false; } }
+  } catch(e) { archivFehler = true; }
+
+  if (archivFehler) {
+    if (!confirm("Das vorhandene Archiv (status-public-local.json) konnte nicht gelesen werden. Wenn Sie jetzt ohne Abgleich exportieren, gehen bereits archivierte öffentliche Vorfälle möglicherweise verloren. Trotzdem ohne Archiv-Abgleich fortfahren?")) {
+      toast("Export abgebrochen – Archiv nicht lesbar.", true);
+      return;
+    }
+  } else if (archivVorhanden && archiv) {
+    pub = mergeArchiv(pub, archiv);
+  }
+
+  pub.organisation.stand = new Date().toISOString();
+
+  // Sicherheitsprüfung (Kern-Anforderung) auf dem gemergten Ergebnis: nichts Internes.
+  const s = JSON.stringify(pub);
+  const leckInternFeld = /"interneNotiz"|"nis2"|"aufbewahrenBis"|"verantwortlich"|"bearbeiter"/.test(s);
+  const leckIncident = (pub.incidents||[]).some(i => i.oeffentlich===false);
+  const leckKomp = (pub.komponentengruppen||[]).some(g => (g.komponenten||[]).some(k => k.oeffentlich===false));
+  if(leckInternFeld || leckIncident || leckKomp){
+    toast("Abbruch: Public-Export enthielte interne Daten.", true);
+    return;
+  }
+  const json = JSON.stringify(pub, null, 2);
+  // status.json gehört auf Cloudflare/öffentlich; die identische status-public-local.json
+  // gehört auf die interne VM (neben status-intern.json), damit die interne Ansicht autark bleibt.
+  download(new Blob([json], {type:"application/json"}), "status.json");
+  download(new Blob([json], {type:"application/json"}), "status-public-local.json");
+  toast("status.json + status-public-local.json exportiert" + (archivVorhanden && archiv ? " (Archiv zusammengeführt)" : ""));
+}
+
+/* ---------- CSV-Logbuch (eine Zeile je Update) ----------
+   intern=true: vollständig inkl. NIS-2, Aufbewahren bis, Verantwortlich, Bearbeiter.
+   intern=false: öffentliche Projektion ohne personenbezogene/NIS-2-Spalten. */
+function buildCsv(incidents, intern){
+  const sep = ";";
+  const q = s => '"' + String(s==null?"":s).replace(/"/g,'""') + '"';
+  const base = ["Vorfall-ID","Titel","Schweregrad","Erheblicher Vorfall","Betroffene Komponenten","Phase","Zeitstempel","Meldung"];
+  const cols = intern ? base.concat(["NIS2 Erstmeldung faellig","NIS2 Folgemeldung faellig","NIS2 Abschluss faellig","Aufbewahren bis","Verantwortlich","Bearbeiter"]) : base;
+  const rows = [cols.map(q).join(sep)];
+  const quellen = incidents.concat((D.historie||[]).filter(h => Array.isArray(h.updates) && h.updates.length));
+  quellen.forEach(inc => {
+    const erheblich = (inc.schweregrad==="erheblich" || (inc.nis2 && inc.nis2.erheblicherVorfall)) ? "ja" : "nein";
+    const komp = (inc.betroffeneKomponenten||[]).join(", ");
+    const n = inc.nis2 || {};
+    (inc.updates||[]).forEach(u => {
+      const row = [inc.id||"", inc.titel||"", inc.schweregrad||"", erheblich, komp, phaseLabel(u.phase), u.zeit||"", u.text||""];
+      if(intern) row.push(n.erstmeldungFaellig||"", n.folgemeldungFaellig||"", n.abschlussFaellig||"", inc.aufbewahrenBis||"", inc.verantwortlich||"", u.bearbeiter||"");
+      rows.push(row.map(q).join(sep));
+    });
+  });
+  return String.fromCharCode(0xFEFF) + rows.join("\r\n");
+}
+function exportCsvIntern(){
+  recalcAllAufbewahrung();
+  D.incidents.forEach((_,i)=>recalcNis2(i));
+  download(new Blob([buildCsv(D.incidents, true)], {type:"text/csv;charset=utf-8"}), `vorfall-logbuch-intern_${todayStr()}.csv`);
+  toast("Internes Logbuch (CSV) exportiert");
+}
+function exportCsvPublic(){
+  const pub = buildPublic(D);
+  download(new Blob([buildCsv(pub.incidents, false)], {type:"text/csv;charset=utf-8"}), `vorfall-logbuch-oeffentlich_${todayStr()}.csv`);
+  toast("\u00D6ffentliches Logbuch (CSV) exportiert");
+}
+
+function toast(msg, err){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "toast show" + (err?" err":"");
+  setTimeout(()=>t.className = "toast"+(err?" err":""), 2600);
+}
+
+/* ---------- Demo ---------- */
+function loadDemo(){ D = normalize(JSON.parse(JSON.stringify(DEMO))); recalcAllAufbewahrung(); renderAll(); toast("Demo-Daten geladen"); }
+const DEMO = {
+  organisation: { name:"Stadtwerke Musterstadt", untertitel:"Systemstatus & Störungsinformationen", logoText:"SWM", kontaktEmail:"stoerung@sw-musterstadt.de", stand:new Date().toISOString() },
+  gesamtstatus:"stoerung",
+  einstellungen: { aufbewahrungErheblichTage:1095, aufbewahrungStandardTage:365 },
+  komponentengruppen:[
+    {name:"Kundenservice",komponenten:[
+      {name:"Kundenportal",status:"betrieb",beschreibung:"Online-Konto, Zählerstände, Rechnungen",oeffentlich:true},
+      {name:"Störungs-Hotline",status:"betrieb",beschreibung:"Telefonische Erreichbarkeit rund um die Uhr",oeffentlich:true}]},
+    {name:"Netzbetrieb",komponenten:[
+      {name:"Netzleitstelle Strom",status:"betrieb",beschreibung:"Überwachung und Steuerung des Stromnetzes",oeffentlich:true},
+      {name:"Smart-Meter-Gateway",status:"eingeschraenkt",beschreibung:"Fernauslesung intelligenter Messsysteme",oeffentlich:true}]},
+    {name:"IT-Infrastruktur",komponenten:[
+      {name:"E-Mail-Dienste (M365)",status:"stoerung",beschreibung:"Exchange Online, Versand und Empfang",oeffentlich:true},
+      {name:"VPN-Fernzugriff",status:"wartung",beschreibung:"Gesicherter Zugriff für Außendienst",oeffentlich:true}]},
+    {name:"Interne Systeme (nur intern)",komponenten:[
+      {name:"Sicherheitsmonitoring (SIEM)",status:"betrieb",beschreibung:"Zentrale Auswertung sicherheitsrelevanter Ereignisse",oeffentlich:false},
+      {name:"Backup-Infrastruktur",status:"betrieb",beschreibung:"Sicherung und Wiederherstellung kritischer Systeme",oeffentlich:false}]}
+  ],
+  incidents:[{
+    id:"INC-2026-0042", titel:"Störung beim E-Mail-Versand (M365)", schweregrad:"erheblich", status:"aktiv", phase:"untersuchung", oeffentlich:true, verantwortlich:"M. Beispiel, IT-Leitung",
+    betroffeneKomponenten:["E-Mail-Dienste (M365)"], beginn:new Date(Date.now()-2*3600e3).toISOString(), behobenAm:null,
+    interneNotiz:"Dienstleister-Support kontaktiert. Ursache vermutlich fehlerhaftes Transport-Regelwerk. Kein Hinweis auf Datenabfluss.",
+    nis2:{erheblicherVorfall:true},
+    updates:[
+      {zeit:new Date(Date.now()-15*60e3).toISOString(),phase:"untersuchung",bearbeiter:"M. Beispiel, IT-Leitung",text:"Die Ursache wird weiterhin untersucht. Wir arbeiten mit dem Dienstleister an einer Lösung."},
+      {zeit:new Date(Date.now()-2*3600e3).toISOString(),phase:"erkannt",bearbeiter:"Service-Desk (Demo)",text:"Wir haben eine Störung beim E-Mail-Versand festgestellt."}
+    ]
+  },{
+    id:"INC-2026-0041", titel:"Auffällige Anmeldeversuche am VPN-Gateway", schweregrad:"erheblich", status:"aktiv", phase:"untersuchung", oeffentlich:false, verantwortlich:"A. Muster, Informationssicherheit",
+    betroffeneKomponenten:["VPN-Fernzugriff","Sicherheitsmonitoring (SIEM)"], beginn:new Date(Date.now()-15*3600e3).toISOString(), behobenAm:null,
+    interneNotiz:"Ungewöhnliche Häufung fehlgeschlagener Anmeldungen. Betroffene Konten vorsorglich gesperrt. Nicht öffentlich kommunizieren.",
+    nis2:{erheblicherVorfall:true},
+    updates:[
+      {zeit:new Date(Date.now()-10*3600e3).toISOString(),phase:"untersuchung",bearbeiter:"A. Muster, Informationssicherheit",text:"Die Anmeldeversuche werden analysiert; betroffene Konten wurden vorsorglich gesperrt."},
+      {zeit:new Date(Date.now()-15*3600e3).toISOString(),phase:"erkannt",bearbeiter:"Sicherheitsmonitoring (automatisch)",text:"Das Sicherheitsmonitoring meldet eine ungewöhnliche Häufung fehlgeschlagener VPN-Anmeldungen."}
+    ]
+  },{
+    id:"INC-2026-0038", titel:"Störung bei Online-Zahlungen im Kundenportal", schweregrad:"gering", status:"behoben", phase:"behoben", oeffentlich:true, verantwortlich:"",
+    betroffeneKomponenten:["Kundenportal"], beginn:new Date(Date.now()-8*864e5).toISOString(), behobenAm:new Date(Date.now()-8*864e5+140*60e3).toISOString(), interneNotiz:"",
+    updates:[
+      {zeit:new Date(Date.now()-8*864e5+140*60e3).toISOString(),phase:"behoben",bearbeiter:"",text:"Die Zahlungsabwicklung funktioniert wieder normal. Die Störung ist behoben."},
+      {zeit:new Date(Date.now()-8*864e5).toISOString(),phase:"erkannt",bearbeiter:"",text:"Online-Zahlungen schlagen fehl. Wir haben die Untersuchung aufgenommen."}
+    ]
+  }],
+  wartungen:[{id:"WAR-2026-0011",titel:"Planmäßige Wartung VPN-Fernzugriff",betroffeneKomponenten:["VPN-Fernzugriff"],geplantBeginn:new Date(Date.now()+2*864e5).toISOString(),geplantEnde:new Date(Date.now()+2*864e5+4*3600e3).toISOString(),beschreibung:"Während des Wartungsfensters ist kein Fernzugriff möglich."}],
+  historie:[
+    {id:"INC-2026-0039",titel:"Kurzzeitige Nichterreichbarkeit Kundenportal",datum:"2026-06-18",dauer:"23 Minuten",status:"behoben"},
+    {id:"WAR-2026-0009",titel:"Wartung Kundenportal abgeschlossen",datum:"2026-06-10",dauer:"2 Stunden",status:"abgeschlossen"}
+  ]
+};
+
+/* ---------- Init ---------- */
+document.getElementById("themeToggle").onclick = () => applyTheme(currentTheme() === "light" ? "dark" : "light");
+syncThemeBtn();
+D = normalize(JSON.parse(JSON.stringify(DEMO)));
+recalcAllAufbewahrung();
+renderAll();
+</script>
+</body>
+</html>

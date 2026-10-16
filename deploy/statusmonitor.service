@@ -1,0 +1,34 @@
+[Unit]
+Description=integrisec Statusmonitor (intern, Caddy)
+Documentation=https://github.com/smaicloud/statusmonitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Eigener Benutzer ohne Login-Shell empfohlen:
+#   sudo useradd --system --no-create-home --shell /usr/sbin/nologin statusmonitor
+User=statusmonitor
+Group=statusmonitor
+WorkingDirectory=/opt/statusmonitor
+
+# DNS-API-Token für die HTTPS-Challenge (Datei mit Rechten 600).
+# Das "-" macht die Datei optional (HTTP-Fallback braucht sie nicht).
+EnvironmentFile=-/opt/statusmonitor/dns.env
+
+ExecStart=/opt/statusmonitor/caddy run --config /opt/statusmonitor/Caddyfile
+ExecReload=/opt/statusmonitor/caddy reload --config /opt/statusmonitor/Caddyfile
+Restart=on-failure
+RestartSec=5
+
+# Erlaubt dem Nicht-Root-Benutzer, die Ports 80/443 zu binden (für HTTPS).
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+# Härtung
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
