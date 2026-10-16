@@ -1,6 +1,6 @@
 [Unit]
 Description=integrisec Statusmonitor (öffentlich, Caddy)
-Documentation=https://github.com/smaicloud/statusmonitor
+Documentation=https://github.com/integrisec-de/statusmonitor
 After=network-online.target
 Wants=network-online.target
 

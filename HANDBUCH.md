@@ -235,9 +235,13 @@ Markieren Sie einen Vorfall als **erheblichen Sicherheitsvorfall**, wenn er meld
 ist. Der Statusmonitor berechnet dann automatisch die Fristen und zeigt sie auf der
 **internen** Seite mit Countdown an:
 
-- **Erstmeldung** innerhalb von 24 Stunden
-- **Folgemeldung** innerhalb von 72 Stunden
-- **Abschlussmeldung** innerhalb eines Monats
+- **Frühe Erstmeldung** innerhalb von 24 Stunden ab Kenntnis
+- **Meldung** innerhalb von 72 Stunden ab Kenntnis
+- **Abschlussmeldung** einen Monat nach Übermittlung der Meldung
+
+Im Editor tragen Sie dazu ein, wann Sie Kenntnis erlangt haben (vorbelegt mit dem
+Vorfallbeginn) und wann die Meldungen übermittelt wurden. Die Monatsfrist beginnt erst
+mit der Übermittlung der 72-Stunden-Meldung, vorher zeigt die Ansicht keinen Countdown.
 
 Der Countdown wechselt die Farbe, je näher eine Frist rückt, und zeigt Überschreitungen
 deutlich an. Diese Informationen erscheinen **nur intern** — auf der öffentlichen Seite

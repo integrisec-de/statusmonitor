@@ -34,8 +34,9 @@ externe Requests.
 
 ## NIS-2-Meldefristen
 - Markierung „erheblicher Sicherheitsvorfall i. S. d. § 32 BSIG".
-- Automatische Berechnung der Fristen ab Vorfallbeginn: **Erstmeldung +24 h**,
-  **Folgemeldung +72 h**, **Abschlussmeldung +1 Monat**.
+- Automatische Berechnung der Fristen nach § 32 BSIG: **frühe Erstmeldung +24 h** und
+  **Meldung +72 h** ab Kenntnis, **Abschlussmeldung +1 Monat** ab Übermittlung der Meldung.
+  Übermittelte Meldungen werden als erledigt angezeigt.
 - **Countdown** mit Farbwechsel (offen / läuft / überschritten), Aktualisierung im Minutentakt.
 - Erscheint ausschließlich intern.
 

@@ -375,7 +375,13 @@ function renderIncidents(){
         <label for="nis2-${ii}" style="margin:0">Erheblicher Sicherheitsvorfall i. S. d. NIS-2 / § 32 BSIG</label>
       </div>`;
     if(inc.nis2&&inc.nis2.erheblicherVorfall){
-      h += `<div class="nis2-info">Fristen ab Beginn automatisch berechnet: Erstmeldung +24 h · Folgemeldung +72 h · Abschluss +1 Monat. Werden in der internen Datei gespeichert und in der internen Ansicht angezeigt.</div>`;
+      const n2 = inc.nis2;
+      h += `<div class="row-3">
+        <div class="field"><label>Kenntnis erlangt am</label><input type="datetime-local" value="${toLocalInput(n2.kenntnis||inc.beginn)}" onchange="setNis2Zeit(${ii},'kenntnis',this.value)"></div>
+        <div class="field"><label>Frühe Erstmeldung übermittelt am</label><input type="datetime-local" value="${toLocalInput(n2.erstmeldungUebermittelt)}" onchange="setNis2Zeit(${ii},'erstmeldungUebermittelt',this.value)"></div>
+        <div class="field"><label>Meldung (72 h) übermittelt am</label><input type="datetime-local" value="${toLocalInput(n2.meldungUebermittelt)}" onchange="setNis2Zeit(${ii},'meldungUebermittelt',this.value)"></div>
+      </div>
+      <div class="nis2-info">Fristen nach § 32 BSIG: frühe Erstmeldung binnen 24 h und Meldung binnen 72 h ab Kenntnis, Abschlussmeldung einen Monat nach Übermittlung der Meldung. Gespeichert nur in der internen Datei und angezeigt nur in der internen Ansicht.</div>`;
     }
     const aufbInfo = inc.aufbewahrenBis
       ? `Aufbewahren bis (intern): <b>${fmtDate(inc.aufbewahrenBis)}</b> (${inc.schweregrad==='erheblich'?'erhebliche':'Standard'}-Frist)`
@@ -406,15 +412,19 @@ function setIncBeginn(ii,val){ D.incidents[ii].beginn=fromLocalInput(val); recal
 function toggleBehoben(ii){ const inc=D.incidents[ii]; if(inc.status==='behoben'){ inc.status='aktiv'; inc.behobenAm=null; } else { inc.status='behoben'; inc.behobenAm=new Date().toISOString(); inc.phase='behoben'; } renderIncidents(); }
 function addUpdate(ii){ D.incidents[ii].updates.unshift({zeit:new Date().toISOString(),phase:D.incidents[ii].phase||"untersuchung",bearbeiter:"",text:""}); renderIncidents(); }
 function delUpdate(ii,ui){ D.incidents[ii].updates.splice(ui,1); renderIncidents(); }
-function toggleNis2(ii,on){ if(on){ D.incidents[ii].nis2={erheblicherVorfall:true}; recalcNis2(ii);} else { delete D.incidents[ii].nis2; } renderIncidents(); }
+function toggleNis2(ii,on){ if(on){ D.incidents[ii].nis2={erheblicherVorfall:true,kenntnis:D.incidents[ii].beginn||new Date().toISOString()}; recalcNis2(ii);} else { delete D.incidents[ii].nis2; } renderIncidents(); }
+function setNis2Zeit(ii,feld,val){ const n=D.incidents[ii].nis2; if(!n) return; const v=fromLocalInput(val); if(v) n[feld]=v; else delete n[feld]; recalcNis2(ii); renderIncidents(); }
 function recalcNis2(ii){
   const inc=D.incidents[ii];
   if(inc.schweregrad==='erheblich' && (!inc.nis2 || !inc.nis2.erheblicherVorfall)){ inc.nis2={erheblicherVorfall:true}; }
-  if(inc.nis2 && inc.nis2.erheblicherVorfall && inc.beginn){
-    const b=new Date(inc.beginn);
-    inc.nis2.erstmeldungFaellig=new Date(b.getTime()+24*3600e3).toISOString();
-    inc.nis2.folgemeldungFaellig=new Date(b.getTime()+72*3600e3).toISOString();
-    const m=new Date(b); m.setMonth(m.getMonth()+1); inc.nis2.abschlussFaellig=m.toISOString();
+  // § 32 BSIG: 24 h und 72 h ab Kenntnis, Abschlussmeldung ein Monat nach
+  // Uebermittlung der 72-h-Meldung. Ohne Uebermittlung gibt es noch keine Frist.
+  if(inc.nis2 && inc.nis2.erheblicherVorfall && (inc.nis2.kenntnis || inc.beginn)){
+    const n=inc.nis2, b=new Date(n.kenntnis||inc.beginn);
+    n.erstmeldungFaellig=new Date(b.getTime()+24*3600e3).toISOString();
+    n.folgemeldungFaellig=new Date(b.getTime()+72*3600e3).toISOString();
+    if(n.meldungUebermittelt){ const m=new Date(n.meldungUebermittelt); m.setMonth(m.getMonth()+1); n.abschlussFaellig=m.toISOString(); }
+    else delete n.abschlussFaellig;
   }
 }
 function hasPersonal(inc){ return !!(inc && (inc.interneNotiz || inc.verantwortlich || inc.nis2 || (inc.updates||[]).some(u=>u.bearbeiter))); }
@@ -640,7 +650,7 @@ function buildCsv(incidents, intern){
   const sep = ";";
   const q = s => '"' + String(s==null?"":s).replace(/"/g,'""') + '"';
   const base = ["Vorfall-ID","Titel","Schweregrad","Erheblicher Vorfall","Betroffene Komponenten","Phase","Zeitstempel","Meldung"];
-  const cols = intern ? base.concat(["NIS2 Erstmeldung faellig","NIS2 Folgemeldung faellig","NIS2 Abschluss faellig","Aufbewahren bis","Verantwortlich","Bearbeiter"]) : base;
+  const cols = intern ? base.concat(["NIS2 Kenntnis","NIS2 fruehe Erstmeldung faellig","NIS2 fruehe Erstmeldung uebermittelt","NIS2 Meldung faellig","NIS2 Meldung uebermittelt","NIS2 Abschlussmeldung faellig","Aufbewahren bis","Verantwortlich","Bearbeiter"]) : base;
   const rows = [cols.map(q).join(sep)];
   const quellen = incidents.concat((D.historie||[]).filter(h => Array.isArray(h.updates) && h.updates.length));
   quellen.forEach(inc => {
@@ -649,7 +659,7 @@ function buildCsv(incidents, intern){
     const n = inc.nis2 || {};
     (inc.updates||[]).forEach(u => {
       const row = [inc.id||"", inc.titel||"", inc.schweregrad||"", erheblich, komp, phaseLabel(u.phase), u.zeit||"", u.text||""];
-      if(intern) row.push(n.erstmeldungFaellig||"", n.folgemeldungFaellig||"", n.abschlussFaellig||"", inc.aufbewahrenBis||"", inc.verantwortlich||"", u.bearbeiter||"");
+      if(intern) row.push(inc.nis2 ? (n.kenntnis||inc.beginn||"") : "", n.erstmeldungFaellig||"", n.erstmeldungUebermittelt||"", n.folgemeldungFaellig||"", n.meldungUebermittelt||"", n.abschlussFaellig||"", inc.aufbewahrenBis||"", inc.verantwortlich||"", u.bearbeiter||"");
       rows.push(row.map(q).join(sep));
     });
   });

@@ -35,7 +35,7 @@
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/smaicloud/statusmonitor"
+          "url": "https://github.com/integrisec-de/statusmonitor"
         },
         {
           "type": "license",

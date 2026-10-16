@@ -531,7 +531,41 @@ function fristStatus(iso) {
   if (diff < 4 * 3600000) return { cls: "soon", flag: "Frist läuft", rest: "noch " + rest };
   return { cls: "ok", flag: "Offen", rest: "noch " + rest };
 }
-function nis2Item(titel, fenster, iso) {
+/* Fristen nach § 32 BSIG: fruehe Erstmeldung binnen 24 h und Meldung binnen
+   72 h ab Kenntnis, Abschlussmeldung einen Monat nach Uebermittlung der
+   72-h-Meldung. Aeltere Datensaetze ohne "kenntnis" rechnen ab Beginn. Die
+   Anzeige rechnet selbst, damit gespeicherte Altwerte nicht falsch anzeigen. */
+function nis2Fristen(i) {
+  const n = i.nis2 || {};
+  const basis = new Date(n.kenntnis || i.beginn).getTime();
+  const plus = h => new Date(basis + h * 3600e3).toISOString();
+  let abschluss = null;
+  if (n.meldungUebermittelt) {
+    const m = new Date(n.meldungUebermittelt); m.setMonth(m.getMonth() + 1); abschluss = m.toISOString();
+  }
+  return {
+    erst: plus(24), meldung: plus(72), abschluss,
+    erstErledigt: !!(n.erstmeldungUebermittelt || n.meldungUebermittelt),
+    meldungErledigt: !!n.meldungUebermittelt
+  };
+}
+function nis2Item(titel, fenster, iso, erledigt) {
+  if (erledigt) {
+    return `<div class="nis2-item">
+    <span class="k">${titel} <span style="color:var(--faint);font-weight:400">(${fenster})</span></span>
+    <span class="nis2-count ok">übermittelt</span>
+    <span class="v">fällig war: ${fmtDateTime(iso)}</span>
+    <span class="nis2-flag ok">Erledigt</span>
+  </div>`;
+  }
+  if (!iso) {
+    return `<div class="nis2-item">
+    <span class="k">${titel} <span style="color:var(--faint);font-weight:400">(${fenster})</span></span>
+    <span class="nis2-count ok">wartet</span>
+    <span class="v">Frist läuft ab Übermittlung der Meldung</span>
+    <span class="nis2-flag ok">Noch nicht fällig</span>
+  </div>`;
+  }
   const s = fristStatus(iso);
   return `<div class="nis2-item ${s.cls === "over" ? "is-over" : ""}">
     <span class="k">${titel} <span style="color:var(--faint);font-weight:400">(${fenster})</span></span>
@@ -591,9 +625,9 @@ function render(data, opts) {
             <span class="nis2-sub">Meldepflichtiger Sicherheitsvorfall</span>
           </div>
           <div class="nis2-grid">
-            ${nis2Item("Erstmeldung", "24 h", i.nis2.erstmeldungFaellig)}
-            ${nis2Item("Folgemeldung", "72 h", i.nis2.folgemeldungFaellig)}
-            ${nis2Item("Abschlussmeldung", "1 Monat", i.nis2.abschlussFaellig)}
+            ${(f => nis2Item("Frühe Erstmeldung", "24 h ab Kenntnis", f.erst, f.erstErledigt)
+              + nis2Item("Meldung", "72 h ab Kenntnis", f.meldung, f.meldungErledigt)
+              + nis2Item("Abschlussmeldung", "1 Monat ab Meldung", f.abschluss, false))(nis2Fristen(i))}
           </div>
         </div>`;
       }

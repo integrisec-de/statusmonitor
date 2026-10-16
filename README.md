@@ -15,7 +15,7 @@ Wenn etwas ausfällt, passieren drei Dinge gleichzeitig: die gesetzliche Meldeuh
 das Telefon steht nicht still, und hinterher fehlt der Nachweis.
 
 - **Keine Meldefrist übersehen.** Die NIS-2-Fristen nach § 32 BSIG laufen als
-  Live-Countdown mit – Erstmeldung 24 h, Folgemeldung 72 h, Abschlussmeldung ein Monat –
+  Live-Countdown mit – frühe Erstmeldung 24 h und Meldung 72 h ab Kenntnis, Abschlussmeldung ein Monat nach Übermittlung der Meldung –
   und wechseln bei knapper Zeit die Farbe. Nur intern sichtbar.
 - **Erreichbar, wenn es darauf ankommt.** Die öffentliche Seite liegt außerhalb der
   eigenen Infrastruktur und bleibt online, auch wenn intern alles steht

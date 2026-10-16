@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: Sicherheitslücke melden
-    url: https://github.com/smaicloud/statusmonitor/blob/main/SECURITY.md
+    url: https://github.com/integrisec-de/statusmonitor/blob/main/SECURITY.md
     about: Bitte vertraulich per E-Mail, nicht als öffentliches Issue.
   - name: Einführung und Beratung
     url: https://integrisec.de/statusmonitor
