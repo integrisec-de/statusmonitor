@@ -105,12 +105,66 @@ foreach ($schriftdatei in @("OFL.txt", "FONTS.md")) {
     }
 }
 
+# ---- Caddy-Binary und Bestandsnachweis ----
+# Die Binary liegt nicht im Repo (deploy/.gitignore). Wird sie unter deploy/caddy
+# bzw. deploy/caddy.exe bereitgelegt, wandert sie in beide Pakete, und Version,
+# Groesse und Pruefsumme landen in VERSIONEN.txt. Damit laesst sich spaeter
+# beantworten, welcher Caddy-Stand bei welchem Kunden liegt.
+$caddyQuelle = $null
+foreach ($kandidat in @((Join-Path $PSScriptRoot "caddy"), (Join-Path $PSScriptRoot "caddy.exe"))) {
+    if (Test-Path $kandidat) { $caddyQuelle = $kandidat; break }
+}
+
+$smVersion = "unbekannt"
+try {
+    $beschreibung = & git -C $repo describe --tags --always --dirty 2>$null
+    if ($beschreibung) { $smVersion = "$beschreibung".Trim() }
+} catch { }
+
+foreach ($ziel in @($out, $outP)) {
+    Set-Content -Path (Join-Path $ziel "VERSIONEN.txt") -Encoding utf8 -Value @(
+        "Bestandteile dieses Pakets",
+        ("Erzeugt:       " + [DateTime]::UtcNow.ToString("yyyy-MM-dd HH:mm") + " UTC"),
+        "",
+        "Statusmonitor: $smVersion"
+    )
+}
+
+if ($caddyQuelle) {
+    $caddyDatei   = Split-Path $caddyQuelle -Leaf
+    $caddyHash    = (Get-FileHash $caddyQuelle -Algorithm SHA256).Hash.ToLower()
+    $caddyGroesse = (Get-Item $caddyQuelle).Length
+    # Die Version laesst sich nur auslesen, wenn die Binary zur Bauplattform passt
+    # (haeufig wird unter Windows fuer einen Linux-Server gepackt).
+    $caddyVersion = $null
+    try { $caddyVersion = (& $caddyQuelle version 2>$null | Select-Object -First 1) } catch { }
+    if (-not $caddyVersion) { $caddyVersion = "nicht auslesbar (Binary fuer andere Plattform)" }
+    foreach ($ziel in @($out, $outP)) {
+        Copy-Item $caddyQuelle (Join-Path $ziel $caddyDatei)
+        Add-Content -Path (Join-Path $ziel "VERSIONEN.txt") -Encoding utf8 -Value @(
+            "Caddy:         $caddyVersion",
+            "  Datei        $caddyDatei ($caddyGroesse Bytes)",
+            "  SHA-256      $caddyHash"
+        )
+    }
+    Write-Output "Caddy-Binary:  $caddyDatei uebernommen - $caddyVersion"
+    $caddyFehlt = $false
+} else {
+    foreach ($ziel in @($out, $outP)) {
+        Add-Content -Path (Join-Path $ziel "VERSIONEN.txt") -Encoding utf8 -Value "Caddy:         FEHLT - Binary einlegen und hier nachtragen"
+    }
+    Write-Output "Caddy-Binary:  nicht gefunden unter deploy/caddy bzw. deploy/caddy.exe"
+    $caddyFehlt = $true
+}
+
 Write-Output "Pakete erstellt:"
 Write-Output "  intern:      $out"
 Write-Output "  oeffentlich: $outP"
 Write-Output "Noch erledigen:"
-Write-Output "  - Caddy-Binary in beide Pakete legen -> https://caddyserver.com/download"
-Write-Output "    (intern: mit DNS-Plugin; oeffentlich: Standard-Binary genuegt, sofern oeffentlich erreichbar)"
+if ($caddyFehlt) {
+    Write-Output "  - Caddy-Binary nach deploy/caddy bzw. deploy/caddy.exe legen und neu bauen"
+    Write-Output "    -> https://caddyserver.com/download (intern mit DNS-Plugin)"
+}
 Write-Output "  - Internes Caddyfile: Editor-Login setzen (caddy hash-password)"
 Write-Output "  - Hostnamen in beiden Caddyfiles anpassen"
 if ($lizenzFehlt) {

@@ -50,6 +50,9 @@ sich um HTTPS und den Editor-Login.
 ├─ Caddyfile                   Server-Konfiguration
 ├─ dns.env                     DNS-API-Token (Rechte 600, nicht im Repo)
 ├─ statusmonitor.service       systemd-Unit (Linux)
+├─ VERSIONEN.txt               welche Staende in diesem Paket stecken
+├─ LICENSE / NOTICE            Lizenz des Statusmonitors (Apache 2.0)
+├─ licenses/                   Lizenzen der Fremdkomponenten (Caddy, Schriften)
 └─ site/
    ├─ index.html               intern-Ansicht als Default
    ├─ admin.html               Editor (hinter Login)
@@ -107,11 +110,18 @@ xcaddy build --with github.com/caddy-dns/cloudflare
 # Provider tauschen: github.com/caddy-dns/<provider>
 ```
 
-Die fertige Binary als `caddy` (Linux) bzw. `caddy.exe` (Windows) ins Paket legen.
-Prüfen, ob das Plugin drin ist:
+Die fertige Binary als `caddy` (Linux) bzw. `caddy.exe` (Windows) nach `deploy/`
+legen – **vor** dem Paketieren. `paketieren.sh` bzw. `.ps1` nimmt sie dann in beide
+Pakete auf und trägt Version, Größe und SHA-256 in `VERSIONEN.txt` ein. Prüfen,
+ob das Plugin drin ist:
 ```
 caddy list-modules | grep dns.providers
 ```
+
+> **Getestet mit Caddy 2.11.x.** Neuere Fassungen laufen erfahrungsgemäß ohne
+> Änderung, sind aber nicht geprüft. Welche Binary tatsächlich ausgeliefert wurde,
+> steht in der `VERSIONEN.txt` des jeweiligen Pakets – wichtig, wenn zu Caddy eine
+> Schwachstelle gemeldet wird und Sie wissen müssen, wer welchen Stand hat.
 
 ### Provider-Kurzreferenz
 

@@ -97,12 +97,62 @@ for schriftdatei in OFL.txt FONTS.md; do
 	fi
 done
 
+# ---- Caddy-Binary und Bestandsnachweis ----
+# Die Binary liegt nicht im Repo (deploy/.gitignore). Wird sie unter deploy/caddy
+# bzw. deploy/caddy.exe bereitgelegt, wandert sie in beide Pakete, und Version,
+# Groesse und Pruefsumme landen in VERSIONEN.txt. Damit laesst sich spaeter
+# beantworten, welcher Caddy-Stand bei welchem Kunden liegt - etwa wenn eine
+# Schwachstelle gemeldet wird.
+caddy_quelle=""
+for kandidat in "$here/caddy" "$here/caddy.exe"; do
+	[ -f "$kandidat" ] && { caddy_quelle="$kandidat"; break; }
+done
+
+sm_version="$(git -C "$repo" describe --tags --always --dirty 2>/dev/null || echo unbekannt)"
+
+for ziel in "$out" "$outP"; do
+	{
+		echo "Bestandteile dieses Pakets"
+		echo "Erzeugt:       $(date -u '+%Y-%m-%d %H:%M UTC')"
+		echo
+		echo "Statusmonitor: $sm_version"
+	} > "$ziel/VERSIONEN.txt"
+done
+
+if [ -n "$caddy_quelle" ]; then
+	caddy_datei="$(basename "$caddy_quelle")"
+	caddy_hash="$(sha256sum "$caddy_quelle" | cut -d' ' -f1)"
+	caddy_groesse="$(wc -c < "$caddy_quelle" | tr -d ' ')"
+	# Die Version laesst sich nur auslesen, wenn die Binary zur Bauplattform passt
+	# (haeufig wird unter Windows fuer einen Linux-Server gepackt).
+	caddy_version="$("$caddy_quelle" version 2>/dev/null | head -1)"
+	[ -n "$caddy_version" ] || caddy_version="nicht auslesbar (Binary fuer andere Plattform)"
+	for ziel in "$out" "$outP"; do
+		cp "$caddy_quelle" "$ziel/$caddy_datei"
+		{
+			echo "Caddy:         $caddy_version"
+			echo "  Datei        $caddy_datei ($caddy_groesse Bytes)"
+			echo "  SHA-256      $caddy_hash"
+		} >> "$ziel/VERSIONEN.txt"
+	done
+	echo "Caddy-Binary:  $caddy_datei uebernommen - $caddy_version"
+	caddy_fehlt=0
+else
+	for ziel in "$out" "$outP"; do
+		echo "Caddy:         FEHLT - Binary einlegen und hier nachtragen" >> "$ziel/VERSIONEN.txt"
+	done
+	echo "Caddy-Binary:  nicht gefunden unter deploy/caddy bzw. deploy/caddy.exe"
+	caddy_fehlt=1
+fi
+
 echo "Pakete erstellt:"
 echo "  intern:      $out"
 echo "  oeffentlich: $outP"
 echo "Noch erledigen:"
-echo "  - Caddy-Binary in beide Pakete legen -> https://caddyserver.com/download"
-echo "    (intern: mit DNS-Plugin; oeffentlich: Standard-Binary genuegt, sofern oeffentlich erreichbar)"
+if [ "$caddy_fehlt" -ne 0 ]; then
+	echo "  - Caddy-Binary nach deploy/caddy bzw. deploy/caddy.exe legen und neu bauen"
+	echo "    -> https://caddyserver.com/download (intern mit DNS-Plugin)"
+fi
 echo "  - Internes Caddyfile: Editor-Login setzen (caddy hash-password)"
 echo "  - Hostnamen in beiden Caddyfiles anpassen"
 if [ "$lizenz_fehlt" -ne 0 ]; then

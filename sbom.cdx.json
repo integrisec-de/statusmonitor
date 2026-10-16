@@ -159,7 +159,7 @@
       "bom-ref": "caddy",
       "type": "application",
       "name": "Caddy",
-      "version": "unbekannt (manuell ins Kundenpaket gelegt)",
+      "version": "getestet mit 2.11.x; ausgelieferte Fassung siehe VERSIONEN.txt im Paket",
       "purl": "pkg:golang/github.com/caddyserver/caddy/v2",
       "scope": "required",
       "description": "Webserver. NICHT im Repo (per deploy/.gitignore ausgeschlossen), wird aber laut paketieren.sh und ANLEITUNG.md manuell ins ausgelieferte Kundenpaket gelegt - also an Dritte weiterverbreitet.",
