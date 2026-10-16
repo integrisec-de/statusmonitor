@@ -24,9 +24,21 @@
     return s[s.length - 1];
   })();
 
+  // Nur http/https und relative Pfade zulassen. Ein javascript:-URL in
+  // data-page-url wuerde sonst beim Klick auf "Details" im Kontext der
+  // einbindenden Website ausgefuehrt. Geprueft wird eine von Steuerzeichen und
+  // Leerraum bereinigte Fassung, zurueckgegeben der unveraenderte Originalwert.
+  function sichereUrl(roh) {
+    var geprueft = String(roh || "").replace(/[\u0000-\u001F\u007F\s]/g, "");
+    if (!geprueft) return "";
+    var schema = geprueft.match(/^([a-z][a-z0-9+.-]*):/i);
+    if (schema && !/^https?$/i.test(schema[1])) return "";
+    return roh;
+  }
+
   var cfg = {
     statusUrl: (script && script.getAttribute("data-status-url")) || "status.json",
-    pageUrl:   (script && script.getAttribute("data-page-url")) || "",
+    pageUrl:   sichereUrl(script && script.getAttribute("data-page-url")),
     variant:   ((script && script.getAttribute("data-variant")) || "bar").toLowerCase(),
     target:    (script && script.getAttribute("data-target")) || "",
     label:     (script && script.getAttribute("data-label")) || "Systemstatus"
